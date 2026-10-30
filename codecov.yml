@@ -1,0 +1,9 @@
+# Report only: the enforced gate is fail_under = 100 in pyproject.toml.
+coverage:
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
