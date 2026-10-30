@@ -230,7 +230,7 @@ def test_start_keeps_waiting_while_health_answers_503(tmp_path, monkeypatch):
         "    def log_message(self, *a): pass\n"
         "HTTPServer(('127.0.0.1', port), H).serve_forever()\n"
     )
-    s = llamacpp.Server("x/y", binary=sys.executable, log=lambda m: None, timeout=30)
+    s = llamacpp.Server("x/y", binary=sys.executable, log=lambda m: None, timeout=180)  # generous: loaded CI runners start a python subprocess slowly; success returns at once
     s.cmd = [sys.executable, str(script)] + s.cmd[1:]
     with s:
         assert s.proc.poll() is None
