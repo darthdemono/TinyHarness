@@ -1,4 +1,5 @@
 """`tinyharness new`: the project template that makes TinyHarness a dependency of the event project."""
+import datetime
 import os
 import re
 import subprocess
@@ -47,10 +48,19 @@ def test_create_writes_every_file_filled_in_and_initialises_git(tmp_path):
     assert meta["project"]["license"] == "Apache-2.0"
 
 
-def test_licence_text_matches_the_one_in_this_repository(tmp_path):
-    dest = scaffold.create("p", parent=str(tmp_path), author="A", git=False)
-    assert open(os.path.join(dest, "LICENSE")).read() == open(os.path.join(ROOT, "LICENSE")).read()
+def test_licence_text_matches_the_one_in_this_repository_except_the_copyright_line(tmp_path):
+    dest = scaffold.create("p", parent=str(tmp_path), author="Ada Lovelace", git=False)
+    made = open(os.path.join(dest, "LICENSE")).read()
+    ours = open(os.path.join(ROOT, "LICENSE")).read()
+    line = re.compile(r"^   Copyright \d{4} .*$", re.MULTILINE)
+    assert len(line.findall(made)) == 1 and "Copyright %d Ada Lovelace" % datetime.date.today().year in made
+    assert line.sub("", made) == line.sub("", ours)
     assert "Local working files" in open(os.path.join(dest, ".gitignore")).read()
+
+
+def test_this_repository_licence_names_the_owner_and_year():
+    assert "Copyright 2026 Jubair Hasan" in open(os.path.join(ROOT, "LICENSE")).read()
+    assert "[yyyy]" not in open(os.path.join(ROOT, "LICENSE")).read()
 
 
 def test_git_is_skipped_on_request_or_when_not_installed(tmp_path, monkeypatch):
