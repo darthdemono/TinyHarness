@@ -101,7 +101,8 @@ class Agent:
             self.messages.append(msg)
             if not calls:
                 return msg.get("content", "")
-            for c in calls:
+            for i, c in enumerate(calls):
+                c.setdefault("id", "call_%d" % i)
                 f = c["function"]
                 args = f["arguments"]
                 if isinstance(args, str):  # OpenAI servers send JSON text, Ollama sends a dict
@@ -111,7 +112,7 @@ class Agent:
                 except Exception as e:  # report the failure to the model instead of crashing
                     res = "error: %s" % e
                 if self.native_tools:
-                    self.messages.append({"role": "tool", "content": res, "tool_call_id": c.get("id", ""), "name": f["name"]})
+                    self.messages.append({"role": "tool", "content": res, "tool_call_id": c["id"], "name": f["name"]})
                 else:
                     self.messages.append({"role": "user", "content": "Tool result for %s: %s" % (f["name"], res)})
         return "stopped after %d steps" % self.max_steps

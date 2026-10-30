@@ -90,6 +90,22 @@ class Client:
             return messages
         out = []
         for m in messages:
+            if m.get("tool_calls"):  # OpenAI servers insist on type=function and JSON-text arguments
+                calls = [
+                    {
+                        "id": c.get("id") or "call_%d" % i,
+                        "type": "function",
+                        "function": {
+                            "name": c["function"]["name"],
+                            "arguments": c["function"]["arguments"]
+                            if isinstance(c["function"]["arguments"], str)
+                            else json.dumps(c["function"]["arguments"]),
+                        },
+                    }
+                    for i, c in enumerate(m["tool_calls"])
+                ]
+                out.append({**m, "tool_calls": calls})
+                continue
             imgs = m.get("images")
             if not imgs:
                 out.append(m)

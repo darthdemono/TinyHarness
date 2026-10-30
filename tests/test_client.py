@@ -36,3 +36,15 @@ def test_stream_openai_assembles_fragmented_tool_call():
     assert msg["content"] == "ok"
     assert msg["tool_calls"][0]["function"] == {"name": "add", "arguments": '{"a": 1, "b": 2}'}
     assert msg["tool_calls"][0]["id"] == "c0"
+
+
+def test_openai_history_gets_typed_json_text_tool_calls():
+    srv, url = start(lambda b: {"role": "assistant", "content": "ok"})
+    msgs = [
+        {"role": "user", "content": "q"},
+        {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": "add", "arguments": {"a": 1}}}]},
+        {"role": "tool", "content": "1", "tool_call_id": "call_0", "name": "add"},
+    ]
+    Client(model="m", backend="openai", base_url=url).chat(msgs)
+    call = srv.seen[0][1]["messages"][1]["tool_calls"][0]
+    assert call == {"id": "call_0", "type": "function", "function": {"name": "add", "arguments": '{"a": 1}'}}
