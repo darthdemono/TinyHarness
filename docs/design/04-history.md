@@ -15,6 +15,7 @@ one, committed in small groups with one plain sentence per commit.
 | 6 | UnENVerse vault support; published to GitHub over SSH; CI passed on all platforms |
 | 7 | 100 percent test coverage with the gate in CI |
 | 8 | Doxygen comments and configuration, badges, CodeQL, Scorecard, Codecov upload, docs publishing, these notes |
+| 9 | Repository renamed to TinyHarness; positioned as a dependency; `tinyharness new` project template |
 
 ## Every commit (generated from `git log`)
 
@@ -54,13 +55,18 @@ one, committed in small groups with one plain sentence per commit.
 | 5455b3b | 2026-10-30 | Add an offline flag so the local engine runs from the model cache without a network |
 | 17282aa | 2026-10-30 | Rewrite the readme around the local engine and add a two-minute demo outline |
 | 97a47c3 | 2026-10-30 | Load API keys and key pools from an UnENVerse vault without printing them |
-| 2cd8c47 | 2026-10-30 | Test the edges: bad model output, odd stream formats, session limits and failing agents |
-| b93a87a | 2026-10-30 | Test doctor, setup, local engine, serve, chat and the full llama.cpp install and shutdown paths |
-| 2600347 | 2026-10-30 | Require full branch coverage in CI and add the coverage plugin to the dev tools |
-| 5701a07 | 2026-10-30 | Document every module, class and function in Doxygen style with the reasons behind each design choice |
-| e8fe41f | 2026-10-30 | Add a Doxygen configuration that builds the API reference with call graphs |
-| 7705c4a | 2026-10-30 | Add CodeQL, OpenSSF Scorecard, Codecov upload, docs publishing and pinned dependency updates |
-| 12f524c | 2026-10-30 | Add status, coverage, scorecard and platform badges to the readme |
+| d322f05 | 2026-10-30 | Test the edges: bad model output, odd stream formats, session limits and failing agents |
+| 680b0a1 | 2026-10-30 | Test doctor, setup, local engine, serve, chat and the full llama.cpp install and shutdown paths |
+| 8e1e4a2 | 2026-10-30 | Require full branch coverage in CI and add the coverage plugin to the dev tools |
+| b6069c1 | 2026-10-30 | Document every module, class and function in Doxygen style with the reasons behind each design choice |
+| f9e6424 | 2026-10-30 | Add a Doxygen configuration that builds the API reference with call graphs |
+| 166d2b2 | 2026-10-30 | Add CodeQL, OpenSSF Scorecard, Codecov upload, docs publishing and pinned dependency updates |
+| 38d1f23 | 2026-10-30 | Add status, coverage, scorecard and platform badges to the readme |
+| 62e4c31 | 2026-10-30 | Add design notes covering goals, architecture, decisions, history, evidence, traps and open items |
+| f30f320 | 2026-10-30 | Explain GitHub rate limits, treat any health answer as ready, and fix two tests on Windows and macOS |
+| 8137dcb | 2026-10-30 | Record the rate limit and cross-platform test traps in the design notes |
+| e36f5ec | 2026-10-30 | Give the slow-start health test a generous timeout so loaded runners do not fail it |
+| 6d8392d | 2026-10-30 | Record the organisers handbook rules, the Gemma API wording and the pre-built toolkit risk in the notes |
 
 Regenerate this table with:
 

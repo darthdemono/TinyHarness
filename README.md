@@ -1,10 +1,10 @@
-# TinyHarness <a href="https://scorecard.dev/viewer/?uri=github.com/darthdemono/tinyharness"><img src="https://img.shields.io/ossf-scorecard/github.com/darthdemono/tinyharness?style=for-the-badge&labelColor=323330&logoColor=white&logo=openssf&label=Scorecard%20%28out%20of%2010%29" alt="OpenSSF Scorecard"></a>
+# TinyHarness <a href="https://scorecard.dev/viewer/?uri=github.com/darthdemono/TinyHarness"><img src="https://img.shields.io/ossf-scorecard/github.com/darthdemono/TinyHarness?style=for-the-badge&labelColor=323330&logoColor=white&logo=openssf&label=Scorecard%20%28out%20of%2010%29" alt="OpenSSF Scorecard"></a>
 
 <p align="center">
-  <a href="https://github.com/darthdemono/tinyharness/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/tinyharness/check.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=Build%20and%20tests" alt="Build and tests"></a>
-  <a href="https://github.com/darthdemono/tinyharness/actions/workflows/codeql.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/tinyharness/codeql.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=CodeQL%20code%20scanning" alt="CodeQL code scanning"></a>
-  <a href="https://github.com/darthdemono/tinyharness/actions/workflows/docs.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/tinyharness/docs.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=API%20reference" alt="API reference build"></a>
-  <a href="https://codecov.io/gh/darthdemono/tinyharness"><img src="https://img.shields.io/codecov/c/github/darthdemono/tinyharness?style=for-the-badge&labelColor=323330&logoColor=white&logo=codecov&label=Coverage" alt="Test coverage"></a>
+  <a href="https://github.com/darthdemono/TinyHarness/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/TinyHarness/check.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=Build%20and%20tests" alt="Build and tests"></a>
+  <a href="https://github.com/darthdemono/TinyHarness/actions/workflows/codeql.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/TinyHarness/codeql.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=CodeQL%20code%20scanning" alt="CodeQL code scanning"></a>
+  <a href="https://github.com/darthdemono/TinyHarness/actions/workflows/docs.yml"><img src="https://img.shields.io/github/actions/workflow/status/darthdemono/TinyHarness/docs.yml?branch=main&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=API%20reference" alt="API reference build"></a>
+  <a href="https://codecov.io/gh/darthdemono/TinyHarness"><img src="https://img.shields.io/codecov/c/github/darthdemono/TinyHarness?style=for-the-badge&labelColor=323330&logoColor=white&logo=codecov&label=Coverage" alt="Test coverage"></a>
 </p>
 
 <p align="center">
@@ -12,13 +12,29 @@
   <img src="https://img.shields.io/badge/-x64%20%7C%20arm64-%23323330.svg?style=for-the-badge&logoColor=white&logo=arm" alt="CPUs: x64 and arm64">
   <img src="https://img.shields.io/badge/-Python%203.11%2B-%23323330.svg?style=for-the-badge&logoColor=white&logo=python" alt="Python 3.11 and newer">
   <img src="https://img.shields.io/badge/-llama.cpp-%23323330.svg?style=for-the-badge&logoColor=white" alt="Engine: llama.cpp">
-  <a href="https://github.com/darthdemono/tinyharness/blob/main/LICENSE"><img src="https://img.shields.io/badge/-Apache--2.0-%23323330.svg?style=for-the-badge&logoColor=white&logo=apache" alt="Licence: Apache-2.0"></a>
-  <a href="https://darthdemono.github.io/tinyharness/"><img src="https://img.shields.io/badge/-API%20reference-%23323330.svg?style=for-the-badge&logoColor=white&logo=readthedocs" alt="API reference"></a>
+  <a href="https://github.com/darthdemono/TinyHarness/blob/main/LICENSE"><img src="https://img.shields.io/badge/-Apache--2.0-%23323330.svg?style=for-the-badge&logoColor=white&logo=apache" alt="Licence: Apache-2.0"></a>
+  <a href="https://darthdemono.github.io/TinyHarness/"><img src="https://img.shields.io/badge/-API%20reference-%23323330.svg?style=for-the-badge&logoColor=white&logo=readthedocs" alt="API reference"></a>
 </p>
 
-A small, fast toolkit for building open-weight AI projects in a day. Pure Python standard library, no
-dependencies, Apache 2.0. Runs on Linux, macOS and Windows, on x64 and arm64, and drives
-[llama.cpp](https://github.com/ggml-org/llama.cpp) so it runs on a laptop CPU or a small GPU.
+A small, fast toolkit that other projects build on. Use it as a dependency: it supplies the model client, the
+tool-calling loop, local llama.cpp, a streaming web page and a set of ready tools, so your own project contains only
+what is specific to your idea. Pure Python standard library, no dependencies, Apache 2.0. Runs on Linux, macOS and
+Windows, on x64 and arm64, on a laptop CPU or a small GPU.
+
+The project is called TinyHarness; the Python package and the command are written in lowercase, `tinyharness`.
+
+## Start your own project on top of it
+
+```
+pip install git+https://github.com/darthdemono/TinyHarness
+tinyharness new my-project         # writes a new repository: licence, README, app, test, CI, submission checklist
+cd my-project
+pip install -e .
+python app.py serve                # your assistant on http://127.0.0.1:8080
+```
+
+The new project lists TinyHarness as its only dependency, starts as its own git repository (no commit is made) and has its
+own history, README and licence. Replace the system prompt in `app.py` and add tools; everything else is already wired.
 
 ## Start in five minutes
 
