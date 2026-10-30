@@ -1,11 +1,14 @@
 """hackbase chat | run PROMPT | skills | serve | bench"""
 import argparse
+import os
 import sys
 
 from . import bench
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
+from .presets import PRESETS
+from .presets import get as preset
 from .tools import folder_tools
 from .web import make_server
 
@@ -17,6 +20,9 @@ def main(argv=None):
     p.add_argument("--url")
     p.add_argument("--skills", default="skills", help="folder of skill directories")
     p.add_argument("-s", "--system", default="")
+    p.add_argument("--preset", choices=sorted(PRESETS), help="role prompt, see hackbase.presets")
+    p.add_argument("--lang", default="English", help="language the preset answers in")
+    p.add_argument("--session", help="JSON file: conversation is loaded from it and saved back after each turn")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
     p.add_argument("--docs", help="folder the agent may list, read and search")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -45,15 +51,21 @@ def main(argv=None):
     if a.cmd == "skills":
         print(skills_mod.catalog(found) or "no skills in " + a.skills)
         return 0
-    agent = Agent(Client(a.model, a.backend, a.url), system=a.system, skills=found, native_tools=not a.text_tools)
+    agent = Agent(Client(a.model, a.backend, a.url), system=(preset(a.preset, a.lang) + "\n" if a.preset else "") + a.system, skills=found, native_tools=not a.text_tools)
+    if a.session and os.path.exists(a.session):
+        agent.load(a.session)
     if a.docs:
         agent.add_tools(folder_tools(a.docs))
     if a.cmd == "run":
         print(agent.run(a.prompt, images=[image_b64(i) for i in a.image] or None))
+        if a.session:
+            agent.save(a.session)
     elif a.cmd == "chat":
         try:
             while True:
                 print(agent.run(input("> ")))
+                if a.session:
+                    agent.save(a.session)
         except (EOFError, KeyboardInterrupt):
             print()
     else:

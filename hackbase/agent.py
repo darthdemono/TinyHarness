@@ -29,6 +29,18 @@ class Agent:
         self.tools[fn.__name__] = fn
         return fn
 
+    def save(self, path):
+        """Write the conversation (without tool definitions) to a JSON file."""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.messages, f, ensure_ascii=False)
+
+    def load(self, path):
+        """Replace the conversation with one saved earlier; the current system prompt is kept."""
+        with open(path, encoding="utf-8") as f:
+            saved = json.load(f)
+        head = [m for m in self.messages[:1] if m["role"] == "system"]
+        self.messages = head + [m for m in saved if m["role"] != "system"]
+
     def add_tools(self, fns):
         for fn in fns:
             self.tool(fn)
