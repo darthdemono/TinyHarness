@@ -4,7 +4,7 @@ import json
 import os
 import sys
 
-from . import bench, flows, hw, llamacpp, redteam
+from . import bench, extras, flows, hw, llamacpp, redteam
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
@@ -32,6 +32,7 @@ def main(argv=None):
     p.add_argument("--lang", default="English", help="language the preset answers in")
     p.add_argument("--session", help="JSON file: conversation is loaded from it and saved back after each turn")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
+    p.add_argument("--extras", action="store_true", help="give the agent calculator, now and fetch_url tools")
     p.add_argument("--docs", help="folder the agent may list, read and search")
     p.add_argument("--local", nargs="?", const="auto", metavar="MODEL",
                    help="run llama.cpp for this command: a .gguf path, a Hugging Face spec user/repo[:quant], or auto (fits this machine)")
@@ -119,6 +120,8 @@ def run(a):
         ag = Agent(client, system=system + extra, skills=found, native_tools=not a.text_tools, max_chars=int(a.ctx * 2.5) if a.local else None)
         if a.docs:
             ag.add_tools(folder_tools(a.docs))
+        if a.extras:
+            ag.add_tools(extras.extras())
         return ag
 
     if a.cmd == "redteam":
