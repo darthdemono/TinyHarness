@@ -4,9 +4,8 @@
 - **Codecov**: sign in at codecov.io with GitHub, enable the repository, then add the upload token as the Actions secret
   `CODECOV_TOKEN`. The workflow skips the upload while the secret is absent, so CI stays green. The coverage badge shows
   "unknown" until the first upload.
-- **OpenSSF Best Practices badge**: register the project at bestpractices.dev, then add its badge (needs the numeric project id).
+- **OpenSSF Best Practices**: the passing badge is earned (project 16103) and shown in the README. Silver and gold are not attempted.
 - **GitHub Pages**: set Pages to "GitHub Actions" in repository settings so the API reference deploys (the workflow exists).
-- **Release badge**: appears after the first tagged release (0.1.0 is prepared).
 - **Dependabot security updates**: a repository setting.
 
 ## Technical follow-ups, none started
