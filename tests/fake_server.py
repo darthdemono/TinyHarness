@@ -50,3 +50,25 @@ def start(reply):
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     srv.seen = seen
     return srv, "http://127.0.0.1:%d" % srv.server_port
+
+
+def start_raw(body, status=200, ctype="text/plain"):
+    """Answer every POST with the given raw text; record (path, headers dict, parsed body). For wire-format edge cases."""
+    seen = []
+
+    class H(BaseHTTPRequestHandler):
+        def do_POST(self):
+            seen.append((self.path, dict(self.headers), json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
+            data = body.encode()
+            self.send_response(status)
+            self.send_header("Content-Type", ctype)
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, *a):
+            pass
+
+    srv = HTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    srv.seen = seen
+    return srv, "http://127.0.0.1:%d" % srv.server_port
