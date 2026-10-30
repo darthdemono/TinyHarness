@@ -96,3 +96,15 @@ this repository. Rejected: building the end project inside this repository.
 ## D19. Naming of the project, package and repository
 The project and GitHub repository are **TinyHarness**; the Python distribution, import package and command are `tinyharness` (Python convention:
 lowercase). The README states this once. The local checkout folder is `TinyHarness`. GitHub keeps redirects from the old lowercase repository name.
+
+## D20. Releases are built from a tag by a workflow
+A tag `v<version>` runs `.github/workflows/release.yml`: it refuses a tag that differs from the version in `pyproject.toml`, builds the sdist and wheel,
+writes `SHA256SUMS`, takes the release notes from the matching `CHANGELOG.md` section, attests build provenance, signs every file keylessly with cosign and
+publishes the GitHub release. Running the workflow by hand is a dry run that publishes nothing and keeps the files as an artifact. Nothing is uploaded to PyPI:
+the package is installed from the repository or the release files. Rejected: signing with a personal key (a long-lived secret to protect), publishing to PyPI
+before the name and the project are settled.
+
+## D21. Branch protection and one required check
+The ruleset `protect-main` (same shape as the owner's other repository) needs a pull request and the single check `CI result`, blocks medium and higher CodeQL
+findings, and forbids deleting or force-pushing `main`. `CI result` is a final job that fails unless the test and engine jobs succeeded, so the matrix can
+change without editing the ruleset.
