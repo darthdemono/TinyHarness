@@ -2,8 +2,33 @@
 import os
 import re
 
-TEXT = (".md", ".txt", ".rst", ".csv", ".json", ".py")
+TEXT = (".md", ".txt", ".rst", ".csv", ".json", ".toml", ".yaml", ".yml", ".html", ".py", ".js", ".ts", ".rs", ".go", ".java", ".c", ".h", ".cpp")
+SKIP = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}
 MAX_READ = 20000
+
+
+def search(root, query, limit=5):
+    """Keyword search under root. Return up to limit (score, path, line_no, line) hits, best first."""
+    root = os.path.realpath(root)
+    words = [w for w in re.findall(r"\w+", query.lower()) if len(w) > 2]
+    hits = []
+    for rel in _walk(root):
+        with open(os.path.join(root, rel), encoding="utf-8", errors="replace") as f:
+            lines = f.read().splitlines()
+        score = sum(ln.lower().count(w) for ln in lines for w in words)
+        if score:
+            n, best = max(enumerate(lines, 1), key=lambda x: sum(w in x[1].lower() for w in words))
+            hits.append((score, rel, n, best.strip()[:200]))
+    hits.sort(key=lambda h: (-h[0], h[1]))
+    return hits[:limit]
+
+
+def _walk(root):
+    for d, dirs, names in os.walk(root):
+        dirs[:] = sorted(x for x in dirs if x not in SKIP)
+        for n in sorted(names):
+            if n.endswith(TEXT):
+                yield os.path.relpath(os.path.join(d, n), root)
 
 
 def folder_tools(root):
@@ -16,15 +41,9 @@ def folder_tools(root):
             raise ValueError("path outside the folder: " + rel)
         return p
 
-    def walk():
-        for d, _, names in os.walk(root):
-            for n in sorted(names):
-                if n.endswith(TEXT):
-                    yield os.path.relpath(os.path.join(d, n), root)
-
     def list_files():
         """List the readable text files in the folder."""
-        return "\n".join(sorted(walk())) or "no files"
+        return "\n".join(sorted(_walk(root))) or "no files"
 
     def read_file(path: str):
         """Read a text file from the folder by relative path (first 20000 characters)."""
@@ -32,17 +51,8 @@ def folder_tools(root):
             return f.read(MAX_READ)
 
     def search_docs(query: str):
-        """Keyword search over the folder. Returns the best 5 files with a matching line each."""
-        words = [w for w in re.findall(r"\w+", query.lower()) if len(w) > 2]
-        hits = []
-        for rel in walk():
-            with open(inside(rel), encoding="utf-8", errors="replace") as f:
-                lines = f.read().splitlines()
-            score = sum(ln.lower().count(w) for ln in lines for w in words)
-            if score:
-                best = max(lines, key=lambda ln: sum(w in ln.lower() for w in words))
-                hits.append((score, rel, best.strip()[:200]))
-        hits.sort(key=lambda h: (-h[0], h[1]))
-        return "\n".join("%s: %s" % (r, s) for _, r, s in hits[:5]) or "no matches"
+        """Keyword search over the folder. Returns the best 5 hits as path:line: text."""
+        hits = search(root, query)
+        return "\n".join("%s:%d: %s" % (r, n, t) for _, r, n, t in hits) or "no matches"
 
     return [list_files, read_file, search_docs]
