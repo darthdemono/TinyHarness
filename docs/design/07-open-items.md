@@ -9,6 +9,17 @@
 - **Release badge**: needs a first tagged release.
 - **Dependabot security updates**: a repository setting.
 
+## Event-day risks found in the organisers' rules
+- **Pre-built toolkit.** This repository was written and published before the event. The standard rules allow libraries and open-source code but say
+  that open-sourcing earlier work only to use it during the event is against their spirit. Ask the host before the event whether using this library is
+  acceptable, say so openly in the submission, and keep the event-day project (its idea, features, UI and demo) new work in a separate repository that
+  depends on this one.
+- **Gemma prize wording.** It expects Gemma through the Gemini API. Local llama.cpp does not obviously qualify. A Gemini API key is needed; the
+  OpenAI-compatible endpoint `https://generativelanguage.googleapis.com/v1beta/openai/` is documented for Gemini models, and whether it accepts the Gemma model
+  ids is not verified. Test `--backend openai --url https://generativelanguage.googleapis.com/v1beta/openai -m gemma-4-26b-a4b-it` as soon as a key exists.
+- **Transparency.** Disclose how the project was built (tools and assistance) in the submission, as the rules require.
+- **README of the event project** must name the model and link its licence; keep the open-source licence file in the repository.
+
 ## Event-day decisions
 - Which problem statement to take (see `docs/PROBLEMS.md` for sixteen guesses, `docs/PITCH.md` for the demo outline).
 - Whether demos start at 17:15 or 17:30.
