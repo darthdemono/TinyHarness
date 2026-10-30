@@ -57,7 +57,19 @@ Things worth knowing about the design:
 
 ## Supported versions
 
-Only the latest release receives security fixes. There is no tagged release yet; until there is one, the `main` branch is the supported version.
+Only the latest release receives security fixes; when a newer release ships, the previous one stops receiving them. The latest release is listed on the [releases page](https://github.com/darthdemono/TinyHarness/releases) and in [CHANGELOG.md](CHANGELOG.md).
+
+### Verifying a release
+
+Each release carries `SHA256SUMS`, and every file has a keyless [cosign](https://docs.sigstore.dev/) signature (`.sig`) and certificate (`.pem`) made by the release workflow, plus a GitHub build-provenance attestation. To check a download:
+
+```
+sha256sum -c SHA256SUMS --ignore-missing
+gh attestation verify tinyharness-0.1.0-py3-none-any.whl --repo darthdemono/TinyHarness
+cosign verify-blob --certificate FILE.pem --signature FILE.sig \
+  --certificate-identity-regexp 'https://github.com/darthdemono/TinyHarness/.github/workflows/release.yml@.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com FILE
+```
 
 ## Secrets and credentials used by the project
 
