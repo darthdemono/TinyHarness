@@ -5,6 +5,7 @@ import sys
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
+from .tools import folder_tools
 from .web import make_server
 
 
@@ -16,6 +17,7 @@ def main(argv=None):
     p.add_argument("--skills", default="skills", help="folder of skill directories")
     p.add_argument("-s", "--system", default="")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
+    p.add_argument("--docs", help="folder the agent may list, read and search")
     sub = p.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
     r.add_argument("prompt")
@@ -31,6 +33,8 @@ def main(argv=None):
         print(skills_mod.catalog(found) or "no skills in " + a.skills)
         return 0
     agent = Agent(Client(a.model, a.backend, a.url), system=a.system, skills=found, native_tools=not a.text_tools)
+    if a.docs:
+        agent.add_tools(folder_tools(a.docs))
     if a.cmd == "run":
         print(agent.run(a.prompt, images=[image_b64(i) for i in a.image] or None))
     elif a.cmd == "chat":

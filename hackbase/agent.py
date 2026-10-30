@@ -29,6 +29,10 @@ class Agent:
         self.tools[fn.__name__] = fn
         return fn
 
+    def add_tools(self, fns):
+        for fn in fns:
+            self.tool(fn)
+
     def _schema(self):
         out = []
         for name, fn in self.tools.items():
