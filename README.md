@@ -8,6 +8,11 @@
 </p>
 
 <p align="center">
+  <a href="https://www.bestpractices.dev/projects/16103"><img src="https://img.shields.io/cii/level/16103?style=for-the-badge&labelColor=323330&logoColor=white&logo=openssf&label=Best%20Practices%20level" alt="OpenSSF Best Practices level"></a>
+  <a href="https://github.com/darthdemono/TinyHarness/releases/latest"><img src="https://img.shields.io/github/v/release/darthdemono/TinyHarness?display_name=tag&style=for-the-badge&labelColor=323330&logoColor=white&logo=github&label=Latest%20release" alt="Latest release"></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/-Linux%20%7C%20Windows%20%7C%20macOS-%23323330.svg?style=for-the-badge&logoColor=white&logo=linux" alt="Platforms: Linux, Windows and macOS">
   <img src="https://img.shields.io/badge/-x64%20%7C%20arm64-%23323330.svg?style=for-the-badge&logoColor=white&logo=arm" alt="CPUs: x64 and arm64">
   <img src="https://img.shields.io/badge/-Python%203.11%2B-%23323330.svg?style=for-the-badge&logoColor=white&logo=python" alt="Python 3.11 and newer">
