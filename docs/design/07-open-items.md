@@ -10,7 +10,7 @@
 - **Dependabot security updates**: a repository setting.
 
 ## Event-day risks found in the organisers' rules
-- **Pre-built toolkit.** This repository was written and published before the event. The standard rules allow libraries and open-source code but say
+- **Pre-built toolkit** (decided by the owner: it is used as a dependency, see D18). This repository was written and published before the event. The standard rules allow libraries and open-source code but say
   that open-sourcing earlier work only to use it during the event is against their spirit. Ask the host before the event whether using this library is
   acceptable, say so openly in the submission, and keep the event-day project (its idea, features, UI and demo) new work in a separate repository that
   depends on this one.

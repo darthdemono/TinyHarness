@@ -20,12 +20,12 @@ not link here; search the repository or the API reference for "design notes" to 
 
 ## State of the project in ten lines
 
-1. A pure-standard-library Python toolkit (3.11+) for building open-weight AI demos in a day. Apache 2.0.
+1. A pure-standard-library Python toolkit (3.11+) meant to be used as a **dependency** of an event project, not as the project itself. `tinyharness new NAME` writes a fresh project repository that depends on it. Apache 2.0.
 2. It talks to models through one `Client` (llama.cpp's server, Ollama, any OpenAI-compatible service).
 3. It can download and run llama.cpp itself (`--local`), with GPU offload through Vulkan (`--gpu`).
 4. An `Agent` runs the tool-calling loop; tools, skills, presets, structured output and flows sit on top.
 5. Front ends: the `tinyharness` command and a one-page streaming web UI.
-6. 122 tests, 100 percent line and branch coverage enforced in CI; ruff and mypy clean.
+6. 132 tests, 100 percent line and branch coverage enforced in CI; ruff and mypy clean.
 7. CI runs on Linux, macOS and Windows, x64 and arm64; a separate job downloads and runs llama.cpp on each.
 8. The default demo model is Gemma 4 E2B (Q4_0), verified for text, images and tool calls on an RTX 2060.
 9. Secrets can come from an UnENVerse vault without being printed (`--unv`).

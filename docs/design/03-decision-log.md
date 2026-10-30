@@ -86,3 +86,13 @@ Design notes live in this folder and are not linked from the README by choice.
 ## D17. Badges and supply-chain checks
 Scorecard, CodeQL, Codecov upload, pinned action SHAs and Dependabot with a one-week cooldown follow the pattern of the
 owner's other repository. Codecov and the Best Practices badge need the owner's accounts; see the open items.
+
+## D18. A dependency, not the project (owner decision, 2026-10-30)
+After reading the organisers' rules the owner decided to treat TinyHarness as an ordinary open-source dependency that speeds up the event
+project, and to state that the rules do not forbid that. The event project is a separate repository created with `tinyharness new`
+(module `scaffold.py`): its own idea, code, tests, README, licence and history, with `tinyharness` as its single dependency. Consequence for this
+repository: documentation and the README describe it as a library first. Rejected: building the event project inside this repository.
+
+## D19. Naming of the project, package and repository
+The project and GitHub repository are **TinyHarness**; the Python distribution, import package and command are `tinyharness` (Python convention:
+lowercase). The README states this once. The local checkout folder is `TinyHarness`. GitHub keeps redirects from the old lowercase repository name.
