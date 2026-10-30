@@ -176,7 +176,7 @@ def run(a):
         say(agent, a.prompt, [image_b64(i) for i in a.image] or None)
         if a.session:
             agent.save(a.session)
-    elif a.cmd == "chat":
+    else:  # chat; every other command returned above
         try:
             while True:
                 say(agent, input("> "))
