@@ -4,6 +4,7 @@ Things that already cost time. Check here before debugging.
 
 ## Engine and models
 - **`/releases/latest` is useless for llama.cpp.** It returns a stub release; use the releases list (see D3).
+- **GitHub's anonymous API allows 60 requests an hour per address.** Runners and venue Wi-Fi share addresses, so the release lookup can fail with HTTP 403. `install` explains it; set `GITHUB_TOKEN` (CI does) or set `TINYHARNESS_LLAMA_SERVER`. Install once at home: the result is cached in `~/.tinyharness`.
 - **llama-server `-np` defaults to auto**, which allocates several slots and multiplies KV-cache memory. We pass `-np 1`.
 - **Sizes**: a 3 to 5 GB model download over venue Wi-Fi is not realistic. Run once at home; use `--offline` after.
 - **System temp can be a small RAM disk.** `/tmp` was full on the development machine and broke an archive download with
@@ -28,6 +29,7 @@ Things that already cost time. Check here before debugging.
 ## Tests and tooling
 - **Doxygen**: `PYTHON_DOCSTRING = NO` is correct (see D16). With YES, `@param` prints literally.
 - **Tool descriptions come from docstrings** (first paragraph only). Putting Doxygen tags in the first paragraph leaks them to the model.
+- **Tests run on Windows and macOS too.** A test that patches `platform.system` must also pin `os.name`, because `hw.ram_gb` checks `os.name` first. Health checks treat any HTTP error (llama-server answers 503 while loading) as not ready yet.
 - **Coverage gate is 100 percent** on Linux; if a platform-specific line cannot be reached on Linux, patch `os.name` or the
   relevant call in the test rather than excluding the line.
 - **Tests that start servers** bind port 0 and shut down; do not hard-code ports.
