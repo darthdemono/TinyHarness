@@ -23,6 +23,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["tinyharness*"]
 
+[tool.setuptools.package-data]
+tinyharness = ["skills/*/SKILL.md"]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100

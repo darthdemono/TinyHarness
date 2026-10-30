@@ -28,7 +28,7 @@ def _walk(root):
         dirs[:] = sorted(x for x in dirs if x not in SKIP)
         for n in sorted(names):
             if n.endswith(TEXT):
-                yield os.path.relpath(os.path.join(d, n), root)
+                yield os.path.relpath(os.path.join(d, n), root).replace(os.sep, "/")  # same output on Windows
 
 
 def folder_tools(root):

@@ -43,3 +43,9 @@ def test_skips_vendor_dirs_and_search_returns_hits(tmp_path):
     (tmp_path / ".git" / "x.txt").write_text("permit")
     (tmp_path / "a.md").write_text("one\npermit permit\n")
     assert search(str(tmp_path), "permit") == [(2, "a.md", 2, "permit permit")]
+
+
+def test_paths_use_forward_slashes_on_every_os(tmp_path):
+    (tmp_path / "a" / "b").mkdir(parents=True)
+    (tmp_path / "a" / "b" / "c.md").write_text("x")
+    assert {f.__name__: f for f in folder_tools(str(tmp_path))}["list_files"]() == "a/b/c.md"

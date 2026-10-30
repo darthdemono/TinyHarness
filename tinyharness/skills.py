@@ -3,6 +3,9 @@ import os
 import re
 
 
+DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skills")  # shipped with the package
+
+
 def parse(text):
     """Return (meta dict, body). Frontmatter is flat 'key: value' lines between --- fences."""
     if not text.startswith("---"):

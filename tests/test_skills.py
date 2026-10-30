@@ -16,7 +16,7 @@ def test_missing_root_and_no_frontmatter(tmp_path):
 
 
 def test_bundled_skill_loads():
-    assert "summarize" in skills.load("skills")
+    assert "summarize" in skills.load(skills.DEFAULT)
 
 
 def test_validate_flags_each_spec_rule(tmp_path):
@@ -37,5 +37,5 @@ def test_validate_flags_each_spec_rule(tmp_path):
 def test_bundled_skills_pass_validation_and_cli(capsys):
     from tinyharness import cli
 
-    assert skills.validate("skills") == []
+    assert skills.validate(skills.DEFAULT) == []
     assert cli.main(["skills", "--validate"]) == 0 and "valid" in capsys.readouterr().out

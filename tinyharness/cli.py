@@ -26,7 +26,7 @@ def main(argv=None):
     p.add_argument("-m", "--model")
     p.add_argument("--backend", choices=["ollama", "openai"])
     p.add_argument("--url")
-    p.add_argument("--skills", default="skills", help="folder of skill directories")
+    p.add_argument("--skills", help="folder of skill directories (default: ./skills if present, else the bundled ones)")
     p.add_argument("-s", "--system", default="")
     p.add_argument("--preset", choices=sorted(PRESETS), help="role prompt, see tinyharness.presets")
     p.add_argument("--lang", default="English", help="language the preset answers in")
@@ -91,6 +91,7 @@ def run(a):
         rows = bench.run(a.models.split(","), a.prompts, backend=a.backend, base_url=a.url)
         print(bench.table(rows))
         return 0
+    a.skills = a.skills or ("skills" if os.path.isdir("skills") else skills_mod.DEFAULT)
     found = skills_mod.load(a.skills)
     if a.cmd == "skills" and a.validate:
         problems = skills_mod.validate(a.skills)
@@ -115,7 +116,7 @@ def run(a):
         print(ans + ("\n\nSources: " + ", ".join(srcs) if srcs else ""))
         return 0
     def build(extra=""):
-        ag = Agent(client, system=system + extra, skills=found, native_tools=not a.text_tools)
+        ag = Agent(client, system=system + extra, skills=found, native_tools=not a.text_tools, max_chars=int(a.ctx * 2.5) if a.local else None)
         if a.docs:
             ag.add_tools(folder_tools(a.docs))
         return ag
