@@ -48,4 +48,6 @@ jobs:
         with:
           python-version: '3.14'
       - run: python -m pip install -e .
-      - run: python -c "import subprocess, sys; from tinyharness import llamacpp; p = llamacpp.install(); print(p); sys.exit(subprocess.call([p, '--version']))"
+      - env:
+          GITHUB_TOKEN: ${{ github.token }} # the anonymous API limit is shared by runners
+        run: python -c "import subprocess, sys; from tinyharness import llamacpp; p = llamacpp.install(); print(p); sys.exit(subprocess.call([p, '--version']))"

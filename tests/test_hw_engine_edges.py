@@ -17,6 +17,7 @@ from tinyharness import hw, llamacpp
 # --- hw --------------------------------------------------------------------
 
 def test_ram_on_macos_comes_from_sysctl(monkeypatch):
+    monkeypatch.setattr(os, "name", "posix")  # on a Windows runner the Windows branch would win otherwise
     monkeypatch.setattr("platform.system", lambda: "Darwin")
     monkeypatch.setattr(subprocess, "check_output", lambda cmd, text: str(8 * 2**30))
     assert hw.ram_gb() == 8.0
@@ -216,7 +217,7 @@ def test_make_executable_sets_the_bit_on_unix_and_leaves_windows_alone(tmp_path,
     llamacpp.make_executable(str(tmp_path / "does-not-exist"))  # would raise if it tried to chmod
 
 
-def test_only_an_http_200_health_answer_means_ready(tmp_path, monkeypatch):
+def test_start_keeps_waiting_while_health_answers_503(tmp_path, monkeypatch):
     import sys
 
     monkeypatch.setenv("TINYHARNESS_HOME", str(tmp_path))
@@ -225,7 +226,7 @@ def test_only_an_http_200_health_answer_means_ready(tmp_path, monkeypatch):
         "import sys\nfrom http.server import BaseHTTPRequestHandler, HTTPServer\n"
         "port = int(sys.argv[sys.argv.index('--port') + 1])\nn = [0]\n"
         "class H(BaseHTTPRequestHandler):\n"
-        "    def do_GET(self):\n        n[0] += 1\n        self.send_response(204 if n[0] < 3 else 200); self.end_headers()\n"
+        "    def do_GET(self):\n        n[0] += 1\n        self.send_response(503 if n[0] < 3 else 200); self.end_headers()\n"
         "    def log_message(self, *a): pass\n"
         "HTTPServer(('127.0.0.1', port), H).serve_forever()\n"
     )
@@ -233,3 +234,25 @@ def test_only_an_http_200_health_answer_means_ready(tmp_path, monkeypatch):
     s.cmd = [sys.executable, str(script)] + s.cmd[1:]
     with s:
         assert s.proc.poll() is None
+
+
+def test_install_explains_a_github_rate_limit(release, monkeypatch):
+    import urllib.error
+
+    def refuse(url):
+        raise urllib.error.HTTPError(url, 403, "rate limit exceeded", {}, None)
+
+    monkeypatch.setattr(llamacpp, "_get", refuse)
+    with pytest.raises(RuntimeError, match="GITHUB_TOKEN"):
+        llamacpp.install(log=lambda m: None)
+
+
+def test_install_passes_other_http_errors_through(release, monkeypatch):
+    import urllib.error
+
+    def broken(url):
+        raise urllib.error.HTTPError(url, 500, "boom", {}, None)
+
+    monkeypatch.setattr(llamacpp, "_get", broken)
+    with pytest.raises(urllib.error.HTTPError):
+        llamacpp.install(log=lambda m: None)
