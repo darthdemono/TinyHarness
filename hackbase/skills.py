@@ -1,5 +1,6 @@
 """Load Agent Skill folders: <dir>/<name>/SKILL.md with name and description frontmatter."""
 import os
+import re
 
 
 def parse(text):
@@ -36,3 +37,24 @@ def load(root):
 def catalog(skills):
     """One line per skill for the system prompt."""
     return "\n".join("- %s: %s" % (n, s["description"]) for n, s in skills.items())
+
+
+def validate(root):
+    """Check every skill folder against the Agent Skills spec; return a list of 'dir: problem' strings."""
+    bad = []
+    for d in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+        p = os.path.join(root, d, "SKILL.md")
+        if not os.path.isfile(p):
+            continue
+        with open(p, encoding="utf-8") as f:
+            meta, body = parse(f.read())
+        n, desc = meta.get("name", ""), meta.get("description", "")
+        if not 1 <= len(n) <= 64 or not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", n):
+            bad.append("%s: name must be 1-64 lowercase letters, digits and single hyphens" % d)
+        if n != d:
+            bad.append("%s: name '%s' must match the directory name" % (d, n))
+        if not 1 <= len(desc) <= 1024:
+            bad.append("%s: description must be 1-1024 characters" % d)
+        if not body.strip():
+            bad.append("%s: body is empty" % d)
+    return bad

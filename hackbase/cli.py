@@ -27,7 +27,8 @@ def main(argv=None):
     b.add_argument("--models", required=True, help="comma separated model names")
     b.add_argument("prompts", nargs="+")
     sub.add_parser("chat")
-    sub.add_parser("skills")
+    k = sub.add_parser("skills")
+    k.add_argument("--validate", action="store_true", help="check folders against the Agent Skills spec")
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8080)
     a = p.parse_args(argv)
@@ -37,6 +38,10 @@ def main(argv=None):
         print(bench.table(rows))
         return 0
     found = skills_mod.load(a.skills)
+    if a.cmd == "skills" and a.validate:
+        problems = skills_mod.validate(a.skills)
+        print("\n".join(problems) or "all skills valid")
+        return 1 if problems else 0
     if a.cmd == "skills":
         print(skills_mod.catalog(found) or "no skills in " + a.skills)
         return 0
