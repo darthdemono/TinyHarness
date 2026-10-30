@@ -9,7 +9,7 @@ not link here; search the repository or the API reference for "design notes" to 
 
 | File | Read it for |
 |---|---|
-| [01-origin-and-goals.md](01-origin-and-goals.md) | The event, its rules and the goal that shaped every choice |
+| [01-origin-and-goals.md](01-origin-and-goals.md) | Why the toolkit exists and the goals that shaped every choice |
 | [02-architecture.md](02-architecture.md) | Modules, data flow, the message shape, where to plug things in |
 | [03-decision-log.md](03-decision-log.md) | Each significant decision with the alternatives that lost and the evidence |
 | [04-history.md](04-history.md) | Timeline of the work, with a generated list of every commit |
@@ -29,7 +29,6 @@ not link here; search the repository or the API reference for "design notes" to 
 7. CI runs on Linux, macOS and Windows, x64 and arm64; a separate job downloads and runs llama.cpp on each.
 8. The default demo model is Gemma 4 E2B (Q4_0), verified for text, images and tool calls on an RTX 2060.
 9. Secrets can come from an UnENVerse vault without being printed (`--unv`).
-10. The problem statement for the event is not known in advance; `docs/PROBLEMS.md` lists sixteen guesses.
 
 ## Rules for editing these notes
 

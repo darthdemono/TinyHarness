@@ -59,7 +59,7 @@ characters) come from agentskills.io/specification, fetched 2026-10-30. The pars
 YAML such as `metadata:` is not supported. Eight skills ship inside the package so they work after `pip install`.
 
 ## D12. Naming
-The first name was `hackbase`. After re-reading the event theme, candidates were Potluck, Lifeboat, Lantern, Kindling,
+The first name was `hackbase`. After re-reading the theme of the event it was built for, candidates were Potluck, Lifeboat, Lantern, Kindling,
 Keel and Commons (checked for PyPI availability). Bedrock was dropped because it collides with a cloud AI product.
 The owner chose **TinyHarness** (it also names the "model harness" prize category).
 
@@ -88,10 +88,10 @@ Scorecard, CodeQL, Codecov upload, pinned action SHAs and Dependabot with a one-
 owner's other repository. Codecov and the Best Practices badge need the owner's accounts; see the open items.
 
 ## D18. A dependency, not the project (owner decision, 2026-10-30)
-After reading the organisers' rules the owner decided to treat TinyHarness as an ordinary open-source dependency that speeds up the event
-project, and to state that the rules do not forbid that. The event project is a separate repository created with `tinyharness new`
-(module `scaffold.py`): its own idea, code, tests, README, licence and history, with `tinyharness` as its single dependency. Consequence for this
-repository: documentation and the README describe it as a library first. Rejected: building the event project inside this repository.
+TinyHarness is treated as an ordinary open-source dependency that speeds up whatever project is built on it. A project is started with
+`tinyharness new` (module `scaffold.py`): a separate repository with its own idea, code, tests, README, licence and history, listing `tinyharness`
+as its single dependency. Consequence here: the README and these notes describe a library first, and event-specific material lives outside
+this repository. Rejected: building the end project inside this repository.
 
 ## D19. Naming of the project, package and repository
 The project and GitHub repository are **TinyHarness**; the Python distribution, import package and command are `tinyharness` (Python convention:

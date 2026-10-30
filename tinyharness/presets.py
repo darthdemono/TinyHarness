@@ -1,5 +1,5 @@
 """@file presets.py
-@brief System prompts for the common roles in the hack-day problem statements.
+@brief System prompts for common roles (plain-language explainer, tutor, quiz maker, coach, first aid, translator, describer).
 
 A preset is just text with a `{lang}` slot. It exists so that a role plus a
 language is one flag (`--preset coach --lang Hungarian`) instead of prompt
