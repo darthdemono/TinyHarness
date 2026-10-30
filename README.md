@@ -63,6 +63,22 @@ tinyharness --local serve --port 8080
 tinyharness bench --backend openai --url http://localhost:8080/v1 --models a,b "Explain DNS in two lines"
 ```
 
+## Secrets from UnENVerse
+
+For a hosted OpenAI-compatible endpoint (a fallback when there is no GPU), keep the key in an
+[UnENVerse](https://github.com/darthdemono/UnENVerse) vault instead of a file or a shell variable.
+`--unv` re-runs the command under `unv exec`, so the key reaches TinyHarness as `TINYHARNESS_API_KEY` in its
+environment and is never printed or passed on a command line:
+
+```
+tinyharness --unv Groq --backend openai --url https://api.groq.com/openai/v1 -m MODEL run "Hello"
+tinyharness --unv-pool free-keys --backend openai --url https://... -m MODEL chat   # next key from a rate-limit pool
+tinyharness --unv "Hugging Face=HF_TOKEN:key" --local ggml-org/some-gated-GGUF run "Hi"
+```
+
+`--unv ENTRY` maps the entry's primary value to `TINYHARNESS_API_KEY`; write `Provider=VAR:field` to choose the variable
+and field yourself. Both flags repeat. This needs the `unv` command on `PATH` and works the same on every system.
+
 ## Build your own
 
 ```python

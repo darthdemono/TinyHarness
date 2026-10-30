@@ -2,6 +2,8 @@
 import argparse
 import json
 import os
+import shutil
+import subprocess
 import sys
 
 from . import bench, extras, flows, hw, llamacpp, redteam
@@ -13,6 +15,34 @@ from .presets import get as preset
 from .structured import ask_json, to_csv
 from .tools import folder_tools
 from .web import make_server
+
+
+def strip_flags(argv, names):
+    """Return argv without the given value-taking flags (both '--flag X' and '--flag=X' forms)."""
+    out, skip = [], False
+    for tok in argv:
+        if skip:
+            skip = False
+        elif tok in names:
+            skip = True
+        elif not any(tok.startswith(n + "=") for n in names):
+            out.append(tok)
+    return out
+
+
+def via_unv(a, argv):
+    """Re-run this command under `unv exec` so vault secrets reach it as environment variables, never as text."""
+    exe = shutil.which("unv")
+    if not exe:
+        raise SystemExit("--unv needs the unv command from UnENVerse on PATH")
+    cmd = [exe, "exec"]
+    for spec in a.unv or []:  # 'Groq' maps to TINYHARNESS_API_KEY; 'Provider=VAR:field' is passed through
+        cmd += ["--entry", spec if "=" in spec else spec + "=TINYHARNESS_API_KEY:key"]
+    for pool in a.unv_pool or []:
+        cmd += ["--pool", pool if "=" in pool else pool + "=TINYHARNESS_API_KEY"]
+    child = strip_flags(argv, ("--unv", "--unv-pool"))
+    env = {**os.environ, "TINYHARNESS_UNV_CHILD": "1"}
+    return subprocess.call(cmd + ["--", sys.executable, "-m", "tinyharness.cli"] + child, env=env)
 
 
 def say(agent, prompt, images=None):
@@ -32,6 +62,8 @@ def main(argv=None):
     p.add_argument("--lang", default="English", help="language the preset answers in")
     p.add_argument("--session", help="JSON file: conversation is loaded from it and saved back after each turn")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
+    p.add_argument("--unv", action="append", metavar="ENTRY", help="UnENVerse vault entry to inject as TINYHARNESS_API_KEY (or Provider=VAR:field, e.g. 'Hugging Face=HF_TOKEN:key'); repeatable")
+    p.add_argument("--unv-pool", action="append", metavar="POOL", help="UnENVerse key pool: the next usable key becomes TINYHARNESS_API_KEY")
     p.add_argument("--extras", action="store_true", help="give the agent calculator, now and fetch_url tools")
     p.add_argument("--docs", help="folder the agent may list, read and search")
     p.add_argument("--local", nargs="?", const="auto", metavar="MODEL",
@@ -68,7 +100,10 @@ def main(argv=None):
     k.add_argument("--validate", action="store_true", help="check folders against the Agent Skills spec")
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8080)
+    argv = sys.argv[1:] if argv is None else list(argv)
     a = p.parse_args(argv)
+    if (a.unv or a.unv_pool) and not os.environ.get("TINYHARNESS_UNV_CHILD"):
+        return via_unv(a, argv)
     if hasattr(sys.stdout, "reconfigure"):  # Windows consoles default to a legacy codepage
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
