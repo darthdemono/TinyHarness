@@ -1,7 +1,8 @@
-"""hackbase chat | run PROMPT | skills | serve"""
+"""hackbase chat | run PROMPT | skills | serve | bench"""
 import argparse
 import sys
 
+from . import bench
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
@@ -22,12 +23,19 @@ def main(argv=None):
     r = sub.add_parser("run")
     r.add_argument("prompt")
     r.add_argument("-i", "--image", action="append", default=[])
+    b = sub.add_parser("bench")
+    b.add_argument("--models", required=True, help="comma separated model names")
+    b.add_argument("prompts", nargs="+")
     sub.add_parser("chat")
     sub.add_parser("skills")
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8080)
     a = p.parse_args(argv)
 
+    if a.cmd == "bench":
+        rows = bench.run(a.models.split(","), a.prompts, backend=a.backend, base_url=a.url)
+        print(bench.table(rows))
+        return 0
     found = skills_mod.load(a.skills)
     if a.cmd == "skills":
         print(skills_mod.catalog(found) or "no skills in " + a.skills)
