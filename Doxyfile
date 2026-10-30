@@ -7,7 +7,7 @@ HTML_OUTPUT            = .
 INPUT                  = README.md tinyharness examples docs
 FILE_PATTERNS          = *.py *.md
 RECURSIVE              = YES
-EXCLUDE_PATTERNS       = */tinyharness/skills/*
+EXCLUDE_PATTERNS       = */tinyharness/skills/* */tinyharness/templates/*
 USE_MDFILE_AS_MAINPAGE = README.md
 # Python: NO makes Doxygen read docstrings as Doxygen comments (so @brief and @param work); YES would print them verbatim.
 OPTIMIZE_OUTPUT_JAVA   = YES

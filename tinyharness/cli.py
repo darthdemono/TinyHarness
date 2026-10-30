@@ -16,7 +16,7 @@ import shutil
 import subprocess
 import sys
 
-from . import bench, extras, flows, hw, llamacpp, redteam
+from . import bench, extras, flows, hw, llamacpp, redteam, scaffold
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
@@ -130,6 +130,10 @@ def main(argv=None):
     sub.add_parser("doctor", help="show this machine and the model that fits it")
     st = sub.add_parser("setup", help="download llama.cpp (llama-server) for this machine")
     st.add_argument("--variant", choices=["cpu", "vulkan"], default="cpu")
+    nw = sub.add_parser("new", help="start a new project that depends on TinyHarness")
+    nw.add_argument("name")
+    nw.add_argument("--author")
+    nw.add_argument("--no-git", action="store_true", help="do not run git init")
     sub.add_parser("chat")
     k = sub.add_parser("skills")
     k.add_argument("--validate", action="store_true", help="check folders against the Agent Skills spec")
@@ -142,6 +146,10 @@ def main(argv=None):
     if hasattr(sys.stdout, "reconfigure"):  # Windows consoles default to a legacy codepage
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+    if a.cmd == "new":
+        dest = scaffold.create(a.name, author=a.author, git=not a.no_git)
+        print("created %s\nnext: cd %s; pip install -e .; python app.py serve" % (dest, a.name))
+        return 0
     if a.cmd == "doctor":
         info = hw.report()
         info["llama_server"] = llamacpp.find_server("cpu") or "not installed (run: tinyharness setup)"

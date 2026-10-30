@@ -1,0 +1,40 @@
+"""@NAME@: replace this file with your idea.
+
+Everything below is plain TinyHarness. Run it:
+
+    python app.py "Your question"      # one answer, streamed
+    python app.py serve                # chat page at http://127.0.0.1:8080
+
+Pick the model with environment variables or the TinyHarness command line:
+TINYHARNESS_BACKEND, TINYHARNESS_MODEL, TINYHARNESS_URL, TINYHARNESS_API_KEY.
+"""
+import sys
+
+from tinyharness.agent import Agent
+from tinyharness.client import Client
+from tinyharness.extras import extras
+from tinyharness.web import make_server
+
+SYSTEM = "TODO: say who the assistant helps and how it should answer."
+
+
+def build_agent(client=None):
+    """Create the assistant. Add your own tools with `agent.tool` or `agent.add_tools`."""
+    agent = Agent(client or Client(), system=SYSTEM)
+    agent.add_tools(extras())  # calculator, clock, web page text
+    return agent
+
+
+def main(argv):
+    if argv[:1] == ["serve"]:
+        server = make_server(build_agent, port=8080)
+        print("http://127.0.0.1:8080")
+        server.serve_forever()
+        return 0
+    build_agent().run(" ".join(argv) or "Say hello.", on_token=lambda t: print(t, end="", flush=True))
+    print()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
