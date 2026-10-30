@@ -29,6 +29,7 @@ import subprocess
 import tarfile
 import tempfile
 import time
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -216,11 +217,19 @@ def install(variant="cpu", log=print):
     @param variant `"cpu"` or `"vulkan"`.
     @param log Callable receiving progress messages (default print).
     @return Path of the llama-server binary.
-    @throws RuntimeError On checksum mismatch, a missing asset, or an archive with no server in it.
+    @throws RuntimeError On checksum mismatch, a missing asset, a GitHub rate limit, or an archive with no server in it.
     """
     pattern = asset_pattern(*platform_key(), variant=variant)
-    with _get(RELEASES) as r:
-        tag, asset = pick_asset(json.load(r), pattern)
+    try:
+        with _get(RELEASES) as r:
+            tag, asset = pick_asset(json.load(r), pattern)
+    except urllib.error.HTTPError as e:
+        if e.code in (403, 429):  # GitHub's anonymous API limit is 60 requests an hour per address
+            raise RuntimeError(
+                "GitHub refused the release lookup (rate limit). Set GITHUB_TOKEN, wait, or download llama-server "
+                "yourself and set TINYHARNESS_LLAMA_SERVER to its path."
+            ) from e
+        raise
     dest = os.path.join(home(), "llama.cpp", "%s-%s" % (tag, variant))
     got = find_binary(dest) if os.path.isdir(dest) else None
     if got:
@@ -364,9 +373,8 @@ class Server:
             if self.proc.poll() is not None:
                 raise RuntimeError("llama-server exited with code %s:\n%s" % (self.proc.returncode, self._tail()))
             try:
-                with urllib.request.urlopen(health, timeout=2) as r:
-                    if r.status == 200:
-                        return self
+                with urllib.request.urlopen(health, timeout=2):
+                    return self  # urlopen raises for 503, which is what llama-server answers while loading
             except OSError:  # 503 while loading, connection refused while binding
                 pass
             time.sleep(0.5)
