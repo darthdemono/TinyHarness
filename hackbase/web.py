@@ -10,17 +10,30 @@ form{display:flex;gap:.5rem;flex-wrap:wrap}input[type=text]{flex:1;min-width:10r
 <h1>hackbase</h1><div id=log></div>
 <form id=f><input id=m type=text placeholder="Ask something" autofocus><input id=i type=file accept="image/*"><button>Send</button></form>
 <script>
-const log=document.getElementById('log');
+const log=document.getElementById('log'),sid=Math.random().toString(36).slice(2);
 function add(c,t){const d=document.createElement('div');d.className=c;d.textContent=t;log.append(d);return d}
 f.onsubmit=async e=>{e.preventDefault();const text=m.value;if(!text)return;m.value='';add('u',text);
  let images=[];if(i.files[0]){images=[await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(i.files[0])})];i.value=''}
  const w=add('a','...');
- try{const r=await fetch('/chat',{method:'POST',body:JSON.stringify({message:text,images})});w.textContent=(await r.json()).reply}
+ try{const r=await fetch('/chat',{method:'POST',body:JSON.stringify({sid,message:text,images})});w.textContent=(await r.json()).reply}
  catch(err){w.textContent='error: '+err}};
 </script>"""
 
 
-def make_server(agent, host="127.0.0.1", port=8080):
+MAX_SESSIONS = 50
+
+
+def make_server(factory, host="127.0.0.1", port=8080):
+    """factory() -> a fresh Agent. Each browser tab gets its own conversation (oldest evicted past 50)."""
+    agents = {}
+
+    def agent_for(sid):
+        if sid not in agents:
+            if len(agents) >= MAX_SESSIONS:
+                agents.pop(next(iter(agents)))
+            agents[sid] = factory()
+        return agents[sid]
+
     class H(BaseHTTPRequestHandler):
         def _send(self, code, ctype, data):
             self.send_response(code)
@@ -40,7 +53,7 @@ def make_server(agent, host="127.0.0.1", port=8080):
                 return self._send(404, "text/plain", b"not found")
             try:
                 req = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-                reply = agent.run(req["message"], images=req.get("images") or None)
+                reply = agent_for(str(req.get("sid", ""))).run(req["message"], images=req.get("images") or None)
             except Exception as e:
                 reply = "error: %s" % e
             self._send(200, "application/json", json.dumps({"reply": reply}).encode())
