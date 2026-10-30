@@ -1,4 +1,4 @@
-"""One-page chat UI: GET / serves the page, POST /chat {message, images} returns {reply}."""
+"""One-page chat UI: GET / serves the page, POST /chat {sid, message, images} streams NDJSON {t: token}."""
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -15,7 +15,11 @@ function add(c,t){const d=document.createElement('div');d.className=c;d.textCont
 f.onsubmit=async e=>{e.preventDefault();const text=m.value;if(!text)return;m.value='';add('u',text);
  let images=[];if(i.files[0]){images=[await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(i.files[0])})];i.value=''}
  const w=add('a','...');
- try{const r=await fetch('/chat',{method:'POST',body:JSON.stringify({sid,message:text,images})});w.textContent=(await r.json()).reply}
+ try{const r=await fetch('/chat',{method:'POST',body:JSON.stringify({sid,message:text,images})});
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',out='';
+  for(;;){const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+   const lines=buf.split('\n');buf=lines.pop();
+   for(const l of lines){if(!l)continue;const m=JSON.parse(l);if(m.t){out+=m.t;w.textContent=out}else if(m.error){w.textContent='error: '+m.error}}}}
  catch(err){w.textContent='error: '+err}};
 </script>"""
 
@@ -51,12 +55,20 @@ def make_server(factory, host="127.0.0.1", port=8080):
         def do_POST(self):
             if self.path != "/chat":
                 return self._send(404, "text/plain", b"not found")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson")
+            self.end_headers()  # no Content-Length: the body streams until the connection closes
             try:
                 req = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-                reply = agent_for(str(req.get("sid", ""))).run(req["message"], images=req.get("images") or None)
+                agent_for(str(req.get("sid", ""))).run(
+                    req["message"], images=req.get("images") or None, on_token=lambda t: self._line({"t": t})
+                )
             except Exception as e:
-                reply = "error: %s" % e
-            self._send(200, "application/json", json.dumps({"reply": reply}).encode())
+                self._line({"error": str(e)})
+
+        def _line(self, obj):
+            self.wfile.write((json.dumps(obj) + "\n").encode())
+            self.wfile.flush()
 
         def log_message(self, *a):
             pass

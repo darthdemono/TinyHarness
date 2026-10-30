@@ -16,7 +16,8 @@ def test_web_chat_roundtrip():
     base = "http://127.0.0.1:%d" % web.server_port
     assert b"hackbase" in urllib.request.urlopen(base + "/").read()
     req = urllib.request.Request(base + "/chat", data=json.dumps({"message": "ping"}).encode())
-    assert json.load(urllib.request.urlopen(req))["reply"] == "pong"
+    lines = [json.loads(x) for x in urllib.request.urlopen(req).read().decode().splitlines()]
+    assert "".join(x["t"] for x in lines) == "pong"
     web.shutdown()
 
 
@@ -42,10 +43,19 @@ def test_web_sessions_are_separate():
 
     def post(sid):
         req = urllib.request.Request(base, data=json.dumps({"sid": sid, "message": "x"}).encode())
-        urllib.request.urlopen(req).read()
+        return urllib.request.urlopen(req).read()
 
     post("a")
     post("a")
     post("b")
     assert seen == [1, 3, 1]
+    web.shutdown()
+
+
+def test_web_reports_backend_failure_as_error_line():
+    web = make_server(lambda: Agent(Client(model="m", base_url="http://127.0.0.1:1")), port=0)
+    threading.Thread(target=web.serve_forever, daemon=True).start()
+    req = urllib.request.Request("http://127.0.0.1:%d/chat" % web.server_port, data=json.dumps({"message": "x"}).encode())
+    line = json.loads(urllib.request.urlopen(req).read().decode().splitlines()[0])
+    assert "error" in line
     web.shutdown()

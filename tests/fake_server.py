@@ -24,7 +24,7 @@ def start(reply):
 
         def _stream(self, msg):
             """Answer in the streaming wire format of whichever backend the path belongs to."""
-            words = [w + " " for w in msg.get("content", "").split()]
+            words = [(" " if i else "") + w for i, w in enumerate(msg.get("content", "").split(" ")) if msg.get("content")]
             lines = []
             if self.path == "/api/chat":
                 lines += [json.dumps({"message": {"content": w}, "done": False}) for w in words]

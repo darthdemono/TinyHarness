@@ -15,6 +15,12 @@ from .tools import folder_tools
 from .web import make_server
 
 
+def say(agent, prompt, images=None):
+    """Run one turn, printing tokens as they arrive."""
+    agent.run(prompt, images=images, on_token=lambda t: print(t, end="", flush=True))
+    print()
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="hackbase")
     p.add_argument("-m", "--model")
@@ -100,13 +106,13 @@ def main(argv=None):
     if a.session and os.path.exists(a.session):
         agent.load(a.session)
     if a.cmd == "run":
-        print(agent.run(a.prompt, images=[image_b64(i) for i in a.image] or None))
+        say(agent, a.prompt, [image_b64(i) for i in a.image] or None)
         if a.session:
             agent.save(a.session)
     elif a.cmd == "chat":
         try:
             while True:
-                print(agent.run(input("> ")))
+                say(agent, input("> "))
                 if a.session:
                     agent.save(a.session)
         except (EOFError, KeyboardInterrupt):

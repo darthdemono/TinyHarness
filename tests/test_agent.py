@@ -97,5 +97,5 @@ def test_streamed_run_runs_tool_and_streams_final_answer():
         return a + b
 
     got = []
-    assert a.run("2+3?", on_token=got.append).strip() == "the sum is five"
-    assert "".join(got).strip() == "the sum is five"
+    assert a.run("2+3?", on_token=got.append)== "the sum is five"
+    assert "".join(got)== "the sum is five"

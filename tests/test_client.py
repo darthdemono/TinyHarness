@@ -25,7 +25,7 @@ def test_stream_ollama_collects_tokens_and_tool_calls():
     _, url = start(lambda b: {"role": "assistant", "content": "hello big world", "tool_calls": [call]})
     got = []
     msg = Client(model="m", backend="ollama", base_url=url).chat([{"role": "user", "content": "x"}], on_token=got.append)
-    assert "".join(got) == "hello big world " and msg["content"] == "hello big world "
+    assert "".join(got) == "hello big world" and msg["content"] == "hello big world"
     assert msg["tool_calls"] == [call]
 
 
@@ -33,6 +33,6 @@ def test_stream_openai_assembles_fragmented_tool_call():
     call = {"function": {"name": "add", "arguments": '{"a": 1, "b": 2}'}}
     _, url = start(lambda b: {"role": "assistant", "content": "ok", "tool_calls": [call]})
     msg = Client(model="m", backend="openai", base_url=url).chat([{"role": "user", "content": "x"}], on_token=lambda t: None)
-    assert msg["content"] == "ok "
+    assert msg["content"] == "ok"
     assert msg["tool_calls"][0]["function"] == {"name": "add", "arguments": '{"a": 1, "b": 2}'}
     assert msg["tool_calls"][0]["id"] == "c0"
