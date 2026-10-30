@@ -1,4 +1,14 @@
-"""tinyharness chat | run | skills | serve | bench | extract | digest | ask | redteam | doctor | setup"""
+"""@file cli.py
+@brief The `tinyharness` command.
+
+Structure: main parses arguments, handles the commands that need no model
+(doctor, setup), optionally re-runs itself under UnENVerse (`--unv`) or starts a
+local engine (`--local`), then calls run. run builds an Agent factory and
+dispatches: bench, extract, digest, ask, redteam, serve, run, chat.
+
+Flag order matters to argparse: global options (such as `--local`, `--gpu`,
+`--docs`, `--preset`) come before the subcommand.
+"""
 import argparse
 import json
 import os
@@ -18,7 +28,12 @@ from .web import make_server
 
 
 def strip_flags(argv, names):
-    """Return argv without the given value-taking flags (both '--flag X' and '--flag=X' forms)."""
+    """@brief Remove value-taking flags from an argument list.
+
+    @param argv Arguments.
+    @param names Flags to remove, each with its value, in both `--flag X` and `--flag=X` forms.
+    @return The remaining arguments.
+    """
     out, skip = [], False
     for tok in argv:
         if skip:
@@ -31,7 +46,17 @@ def strip_flags(argv, names):
 
 
 def via_unv(a, argv):
-    """Re-run this command under `unv exec` so vault secrets reach it as environment variables, never as text."""
+    """@brief Re-run this command under `unv exec` so vault secrets arrive as environment variables.
+
+    The secret is injected into the child process environment by UnENVerse and is
+    never printed or placed on a command line. A marker variable
+    (TINYHARNESS_UNV_CHILD) stops the child from doing this again.
+
+    @param a Parsed arguments (uses `unv` and `unv_pool`).
+    @param argv The original argument list; the unv flags are stripped from the copy given to the child.
+    @return The child's exit code.
+    @throws SystemExit If the `unv` command is not on PATH.
+    """
     exe = shutil.which("unv")
     if not exe:
         raise SystemExit("--unv needs the unv command from UnENVerse on PATH")
@@ -46,12 +71,22 @@ def via_unv(a, argv):
 
 
 def say(agent, prompt, images=None):
-    """Run one turn, printing tokens as they arrive."""
+    """@brief Run one turn and print tokens as they arrive, then a newline.
+
+    @param agent An Agent.
+    @param prompt User text.
+    @param images Optional base64 images.
+    """
     agent.run(prompt, images=images, on_token=lambda t: print(t, end="", flush=True))
     print()
 
 
 def main(argv=None):
+    """@brief Entry point.
+
+    @param argv Argument list; defaults to sys.argv[1:].
+    @return Process exit code (0 success; `redteam` returns 1 if any attack leaked).
+    """
     p = argparse.ArgumentParser(prog="tinyharness")
     p.add_argument("-m", "--model")
     p.add_argument("--backend", choices=["ollama", "openai"])
@@ -124,6 +159,13 @@ def main(argv=None):
 
 
 def run(a):
+    """@brief Execute the chosen command with a resolved configuration.
+
+    Skills come from `--skills`, else `./skills` if present, else the ones bundled with the package.
+
+    @param a Parsed arguments, with backend and url already pointing at the local engine when `--local` was used.
+    @return Exit code.
+    """
     if a.cmd == "bench":
         rows = bench.run(a.models.split(","), a.prompts, backend=a.backend, base_url=a.url)
         print(bench.table(rows))
@@ -153,6 +195,10 @@ def run(a):
         print(ans + ("\n\nSources: " + ", ".join(srcs) if srcs else ""))
         return 0
     def build(extra=""):
+        """@brief Create a fully configured Agent (tools, extras, context limit).
+
+        @param extra Text appended to the system prompt (redteam uses it to plant the canary).
+        """
         ag = Agent(client, system=system + extra, skills=found, native_tools=not a.text_tools, max_chars=int(a.ctx * 2.5) if a.local else None)
         if a.docs:
             ag.add_tools(folder_tools(a.docs))

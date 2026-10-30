@@ -1,4 +1,18 @@
-"""Load Agent Skill folders: <dir>/<name>/SKILL.md with name and description frontmatter."""
+"""@file skills.py
+@brief Load and validate Agent Skills: folders containing a SKILL.md with name and description.
+
+Format (from https://agentskills.io/specification, read 2026-10-30):
+
+- name: 1 to 64 characters, lowercase letters, digits and single hyphens, no leading or trailing hyphen, equal to the folder name.
+- description: 1 to 1024 characters saying what the skill does and when to use it.
+- Body: free Markdown instructions.
+
+Progressive disclosure: only name and description go into the agent's prompt
+(catalog); the body is read on demand through the `use_skill` tool.
+
+The frontmatter parser is intentionally minimal (flat `key: value` lines).
+Nested YAML such as `metadata:` maps is not parsed.
+"""
 import os
 import re
 
@@ -7,7 +21,11 @@ DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "skills")  # 
 
 
 def parse(text):
-    """Return (meta dict, body). Frontmatter is flat 'key: value' lines between --- fences."""
+    """@brief Split a SKILL.md into frontmatter fields and body.
+
+    @param text File contents.
+    @return `(meta dict, body text)`; `({}, text)` if there is no frontmatter.
+    """
     if not text.startswith("---"):
         return {}, text
     head, _, body = text[3:].partition("\n---")
@@ -20,7 +38,11 @@ def parse(text):
 
 
 def load(root):
-    """Map skill name -> {'description','body','path'} for every SKILL.md directly under root."""
+    """@brief Read every skill folder directly under root.
+
+    @param root Folder containing one subfolder per skill.
+    @return Mapping name -> `{description, body, path}`; empty if root does not exist.
+    """
     skills = {}
     if not os.path.isdir(root):
         return skills
@@ -38,12 +60,19 @@ def load(root):
 
 
 def catalog(skills):
-    """One line per skill for the system prompt."""
+    """@brief One `- name: description` line per skill, for the system prompt.
+
+    @param skills Mapping from load.
+    """
     return "\n".join("- %s: %s" % (n, s["description"]) for n, s in skills.items())
 
 
 def validate(root):
-    """Check every skill folder against the Agent Skills spec; return a list of 'dir: problem' strings."""
+    """@brief Check skill folders against the specification.
+
+    @param root Folder containing skill folders. Folders without SKILL.md are ignored.
+    @return List of `"dir: problem"` strings; empty when everything is valid.
+    """
     bad = []
     for d in sorted(os.listdir(root)) if os.path.isdir(root) else []:
         p = os.path.join(root, d, "SKILL.md")

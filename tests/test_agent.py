@@ -152,3 +152,19 @@ def test_long_tool_result_is_truncated():
 
     a.run("go")
     assert n[1]["messages"][-1]["content"] == "z" * 10 + "\n[truncated 40 characters]"
+
+
+def test_tool_description_is_the_first_paragraph_only():
+    a = Agent(Client(model="m"))
+
+    @a.tool
+    def f(x: int):
+        """Do the thing
+        across two lines.
+
+        @param x documentation for people, not for the model
+        @return nothing
+        """
+
+    desc = a._schema()[0]["function"]["description"]
+    assert desc == "Do the thing across two lines." and "@param" not in desc

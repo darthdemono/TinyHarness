@@ -1,4 +1,11 @@
-"""Tiny hardware probe and model recommendation. Standard library only, no psutil."""
+"""@file hw.py
+@brief A tiny hardware probe and a model recommendation, standard library only.
+
+Used by `tinyharness doctor` and by `--local` with no model named. The model
+tiers below were checked against Hugging Face on 2026-10-30; the thresholds are
+a conservative rule of thumb (model file plus context plus runtime must fit in
+RAM) and have not been timed on every class of device.
+"""
 import os
 import platform
 import subprocess
@@ -13,7 +20,12 @@ TIERS = [
 
 
 def parse_meminfo(text):
-    """Return total RAM in GB from /proc/meminfo text."""
+    """@brief Read total RAM from the text of /proc/meminfo.
+
+    @param text File contents.
+    @return Gigabytes (GiB).
+    @throws ValueError If there is no MemTotal line.
+    """
     for line in text.splitlines():
         if line.startswith("MemTotal:"):
             return int(line.split()[1]) / 1048576
@@ -21,7 +33,14 @@ def parse_meminfo(text):
 
 
 def ram_gb():
-    """Total physical RAM in GB, or None when it cannot be read."""
+    """@brief Total physical RAM in GiB.
+
+    Linux reads /proc/meminfo, macOS asks `sysctl hw.memsize`, Windows calls
+    GlobalMemoryStatusEx through ctypes. Any failure yields None rather than an
+    exception, because a missing number should degrade the recommendation, not abort.
+
+    @return GiB as a float, or None when it cannot be read.
+    """
     try:
         if os.name == "nt":
             import ctypes
@@ -44,7 +63,11 @@ def ram_gb():
 
 
 def recommend(gb):
-    """(spec, note) of the largest tier that fits gb of RAM; the smallest tier when unknown."""
+    """@brief Pick the largest model tier that fits in a given amount of RAM.
+
+    @param gb Total RAM in GiB, or None if unknown (then the second tier, a safe small text model, is returned).
+    @return `(huggingface_spec, human_note)`.
+    """
     if gb is None:
         return TIERS[1][1], TIERS[1][2]
     for cap, spec, note in TIERS:
@@ -54,6 +77,10 @@ def recommend(gb):
 
 
 def report():
+    """@brief Describe this machine and the recommended model.
+
+    @return A dict with system, cpus, ram_gb, recommended_model and note, printed as JSON by `doctor`.
+    """
     gb = ram_gb()
     spec, note = recommend(gb)
     return {

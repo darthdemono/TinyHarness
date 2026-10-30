@@ -1,4 +1,11 @@
-"""Ask for JSON that matches a flat schema, validate it, retry with the error as feedback."""
+"""@file structured.py
+@brief Get validated JSON out of a model: schema check, error feedback, retry, CSV export.
+
+Small models often add chatter or miss a key. Rather than hoping, ask_json
+extracts the first JSON value from the reply, validates it against a flat
+schema, and on failure sends the exact error back to the model and tries again.
+Powers the `extract` command (receipt photo to CSV, and similar).
+"""
 import csv
 import io
 import json
@@ -7,7 +14,12 @@ TYPES = {"str": str, "int": int, "float": (int, float), "bool": bool, "list": li
 
 
 def find_json(text):
-    """Return the first JSON object or array embedded in text (fences and chatter tolerated)."""
+    """@brief Find the first valid JSON object or array inside text (code fences and chatter allowed).
+
+    @param text Model reply.
+    @return The parsed value.
+    @throws ValueError If nothing parses.
+    """
     dec = json.JSONDecoder()
     for i, ch in enumerate(text):
         if ch in "{[":
@@ -19,7 +31,14 @@ def find_json(text):
 
 
 def check(obj, schema):
-    """Raise ValueError unless obj is a dict with every schema key at the right type."""
+    """@brief Validate one object against a flat schema.
+
+    Booleans are rejected where a number is expected (in Python, True is an int).
+
+    @param obj Parsed value.
+    @param schema Mapping field name -> one of `str int float bool list dict`.
+    @throws ValueError Describing the first problem (not an object, missing key, wrong type).
+    """
     if not isinstance(obj, dict):
         raise ValueError("expected a JSON object, got " + type(obj).__name__)
     for k, t in schema.items():
@@ -31,7 +50,18 @@ def check(obj, schema):
 
 
 def ask_json(client, prompt, schema, images=None, system=None, many=False, retries=2):
-    """Return one dict matching schema, or a list of them when many=True."""
+    """@brief Ask a model for structured data, validating and retrying.
+
+    @param client A Client.
+    @param prompt Instruction or question.
+    @param schema Flat schema, see check.
+    @param images Optional base64 images (for example a receipt photo).
+    @param system Optional extra system text.
+    @param many True expects a JSON array of objects, False one object.
+    @param retries Extra attempts after the first.
+    @return The validated object, or list of objects.
+    @throws ValueError If every attempt is invalid.
+    """
     shape = json.dumps({k: t for k, t in schema.items()})
     want = "a JSON array of objects" if many else "one JSON object"
     msgs = [{"role": "system", "content": (system or "") + "\nReply with %s shaped like %s and nothing else." % (want, shape)}]
@@ -54,6 +84,12 @@ def ask_json(client, prompt, schema, images=None, system=None, many=False, retri
 
 
 def to_csv(rows, schema):
+    """@brief Render rows as CSV text with a header from the schema field order.
+
+    @param rows List of dicts.
+    @param schema Defines the columns; extra keys in rows are ignored.
+    @return CSV with `\n` line endings.
+    """
     out = io.StringIO()
     w = csv.DictWriter(out, fieldnames=list(schema), extrasaction="ignore", lineterminator="\n")
     w.writeheader()
