@@ -101,6 +101,7 @@ def test_command_uses_file_or_hf_and_small_machine_flags(tmp_path):
     assert c[c.index("-m") + 1] == str(gguf) and "-hf" not in c
     assert c[c.index("-np") + 1] == "1" and "--no-webui" in c and c[c.index("-ngl") + 1] == "99"
     assert c[c.index("-ctk") + 1] == "q8_0" and c[c.index("-t") + 1] == "2"
+    assert "--offline" in llamacpp.command("srv", "x/y", 9000, offline=True)
     h = llamacpp.command("srv", "ggml-org/x-GGUF:Q4_0", 9000)
     assert h[h.index("-hf") + 1] == "ggml-org/x-GGUF:Q4_0" and "-ngl" not in h
 

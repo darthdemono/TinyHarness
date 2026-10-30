@@ -37,6 +37,7 @@ def main(argv=None):
     p.add_argument("--local", nargs="?", const="auto", metavar="MODEL",
                    help="run llama.cpp for this command: a .gguf path, a Hugging Face spec user/repo[:quant], or auto (fits this machine)")
     p.add_argument("--gpu", action="store_true", help="with --local: use the Vulkan build and offload every layer to the GPU")
+    p.add_argument("--offline", action="store_true", help="with --local: use the cached model only, no network")
     p.add_argument("--ctx", type=int, default=4096, help="context size for --local")
     p.add_argument("--threads", type=int, help="CPU threads for --local (default: llama.cpp decides)")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -81,7 +82,7 @@ def main(argv=None):
         return 0
     if a.local:
         spec = hw.recommend(hw.ram_gb())[0] if a.local == "auto" else a.local
-        with llamacpp.Server(spec, ctx=a.ctx, threads=a.threads, gpu=a.gpu) as srv:
+        with llamacpp.Server(spec, ctx=a.ctx, threads=a.threads, gpu=a.gpu, offline=a.offline) as srv:
             a.backend, a.url = "openai", srv.url
             return run(a)
     return run(a)

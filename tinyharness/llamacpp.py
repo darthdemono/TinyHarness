@@ -150,7 +150,7 @@ def free_port():
         return s.getsockname()[1]
 
 
-def command(binary, model, port, ctx=4096, threads=None, kv="q8_0", gpu_layers=None):
+def command(binary, model, port, ctx=4096, threads=None, kv="q8_0", gpu_layers=None, offline=False):
     """llama-server argv tuned for small machines: one slot, quantised KV cache, no built-in web UI.
 
     model is a path to a .gguf file, or a Hugging Face spec 'user/repo[:quant]' that llama-server downloads itself.
@@ -161,6 +161,8 @@ def command(binary, model, port, ctx=4096, threads=None, kv="q8_0", gpu_layers=N
         cmd += ["-t", str(threads)]
     if gpu_layers is not None:
         cmd += ["-ngl", str(gpu_layers)]
+    if offline:
+        cmd.append("--offline")  # use the model cache only, never touch the network
     if kv:
         cmd += ["-ctk", kv, "-ctv", kv]
     return cmd
@@ -169,11 +171,11 @@ def command(binary, model, port, ctx=4096, threads=None, kv="q8_0", gpu_layers=N
 class Server:
     """Run llama-server as a child process for the length of a with block."""
 
-    def __init__(self, model, binary=None, ctx=4096, threads=None, kv="q8_0", timeout=1800, log=print, gpu=False):
+    def __init__(self, model, binary=None, ctx=4096, threads=None, kv="q8_0", timeout=1800, log=print, gpu=False, offline=False):
         variant = "vulkan" if gpu else "cpu"
         self.binary = binary or find_server(variant) or install(variant, log=log)
         self.port = free_port()
-        self.cmd = command(self.binary, model, self.port, ctx, threads, kv, gpu_layers=99 if gpu else None)
+        self.cmd = command(self.binary, model, self.port, ctx, threads, kv, gpu_layers=99 if gpu else None, offline=offline)
         self.timeout = timeout
         self.log = log
         self.proc = None
