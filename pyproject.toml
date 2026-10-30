@@ -24,7 +24,7 @@ build-backend = "setuptools.build_meta"
 include = ["tinyharness*"]
 
 [tool.setuptools.package-data]
-tinyharness = ["skills/*/SKILL.md"]
+tinyharness = ["skills/*/SKILL.md", "templates/project/*.tmpl"]
 
 [tool.ruff]
 target-version = "py311"

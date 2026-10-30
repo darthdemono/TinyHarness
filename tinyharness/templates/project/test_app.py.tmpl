@@ -1,0 +1,15 @@
+"""A starting test. Replace it with checks of what your project promises."""
+import app
+
+
+class FakeClient:
+    """Stands in for the model so tests need no server."""
+
+    def chat(self, messages, tools=None, on_token=None):
+        if on_token:
+            on_token("hello")
+        return {"role": "assistant", "content": "hello"}
+
+
+def test_the_assistant_answers():
+    assert app.build_agent(FakeClient()).run("hi") == "hello"

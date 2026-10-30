@@ -1,0 +1,25 @@
+[project]
+name = "@SLUG@"
+version = "0.1.0"
+description = "TODO: one sentence about what this does"
+requires-python = ">=3.11"
+dependencies = ["tinyharness @ git+https://github.com/darthdemono/TinyHarness"]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{name = "@AUTHOR@"}]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["app"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

@@ -1,0 +1,29 @@
+# @NAME@
+
+TODO: one paragraph. Who has the problem, what does this do about it, and what can you see working in two minutes?
+
+## How it works
+
+- **Model:** TODO name the model exactly (for example `gemma-4-E2B-it`), its size, and link its licence or terms.
+- **Engine:** TODO llama.cpp running locally, or the Gemini API, or another server.
+- **Built on:** [TinyHarness](https://github.com/darthdemono/TinyHarness), an Apache-2.0 library for the tool-calling loop, the model client and the web page. Everything specific to this project is in `app.py` and the files next to it.
+
+## Run it
+
+```
+pip install -e .
+tinyharness doctor                 # what this machine can run
+tinyharness setup                  # fetch the local engine once
+python app.py serve                # chat page on http://127.0.0.1:8080
+```
+
+## Tests
+
+```
+pip install -e ".[dev]"
+python -m pytest -q
+```
+
+## Licence
+
+Apache License 2.0, see `LICENSE` and `NOTICE`.
