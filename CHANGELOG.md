@@ -1,9 +1,13 @@
 # Changelog
 
-All notable changes are listed here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/). There is no tagged
-release yet, so everything is under Unreleased.
+All notable changes are listed here, newest first. The format follows [Keep a Changelog](https://keepachangelog.com/) and the project uses
+[Semantic Versioning](https://semver.org/).
 
 ## Unreleased
+
+## 0.1.0 - 2026-10-30
+
+First release.
 
 ### Added
 - Model client for llama.cpp, Ollama and any OpenAI-compatible server, with image input and token streaming.
@@ -15,3 +19,10 @@ release yet, so everything is under Unreleased.
 - `tinyharness new` writes a fresh project that depends on TinyHarness.
 - UnENVerse vault support: `--unv` and `--unv-pool` inject API keys without printing them.
 - Doxygen API reference, design notes under `docs/design`, 100 percent test coverage gate, CI on six platforms, CodeQL, OpenSSF Scorecard.
+
+### Security
+- No publicly known vulnerability is fixed in this release, and none has a CVE. The engine download is verified against the SHA-256 digest
+  GitHub publishes, and the release files are signed and attested by the release workflow.
+
+### Upgrade notes
+- Nothing to upgrade from. Install with `pip install git+https://github.com/darthdemono/TinyHarness` or from the release files.
