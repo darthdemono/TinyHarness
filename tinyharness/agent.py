@@ -6,8 +6,10 @@ _TYPES = {int: "integer", float: "number", bool: "boolean"}
 
 
 class Agent:
-    def __init__(self, client, system="", skills=None, max_steps=8, native_tools=True):
+    def __init__(self, client, system="", skills=None, max_steps=8, native_tools=True, max_chars=None, max_tool_chars=4000):
         self.client = client
+        self.max_chars = max_chars
+        self.max_tool_chars = max_tool_chars
         self.native_tools = native_tools
         self.max_steps = max_steps
         self.tools = {}
@@ -28,6 +30,26 @@ class Agent:
         """Register fn. Its docstring is the description; annotations give parameter types."""
         self.tools[fn.__name__] = fn
         return fn
+
+    def fit(self, messages):
+        """Drop the oldest turns until the history fits max_chars (small models have small contexts).
+
+        System messages and the newest message always stay; the history never starts mid tool call.
+        """
+        if not self.max_chars:
+            return messages
+
+        def size(m):
+            return len(m.get("content") or "") + len(json.dumps(m.get("tool_calls") or "")) + 2000 * len(m.get("images") or [])
+
+        head = [m for m in messages if m["role"] == "system"]
+        rest = [m for m in messages if m["role"] != "system"]
+        budget = self.max_chars - sum(map(size, head))
+        while len(rest) > 1 and sum(map(size, rest)) > budget:
+            rest.pop(0)
+            while len(rest) > 1 and rest[0]["role"] != "user":
+                rest.pop(0)
+        return head + rest
 
     def save(self, path):
         """Write the conversation (without tool definitions) to a JSON file."""
@@ -91,12 +113,12 @@ class Agent:
         self.messages.append({"role": "user", "content": prompt, **({"images": images} if images else {})})
         for _ in range(self.max_steps):
             if self.native_tools:
-                msg = self.client.chat(self.messages, tools=self._schema() or None, on_token=on_token)
+                msg = self.client.chat(self.fit(self.messages), tools=self._schema() or None, on_token=on_token)
                 calls = msg.get("tool_calls")
             else:
                 extra = [{"role": "system", "content": self._text_prompt()}] if self.tools else []
                 # text-mode tool calls are raw JSON, so only stream when no tools are registered
-                msg = self.client.chat(extra + self.messages, on_token=None if self.tools else on_token)
+                msg = self.client.chat(extra + self.fit(self.messages), on_token=None if self.tools else on_token)
                 calls = self._parse_text_call(msg.get("content", "")) if self.tools else None
             self.messages.append(msg)
             if not calls:
@@ -109,6 +131,8 @@ class Agent:
                     args = json.loads(args or "{}")
                 try:
                     res = str(self.tools[f["name"]](**args))
+                    if len(res) > self.max_tool_chars:
+                        res = res[: self.max_tool_chars] + "\n[truncated %d characters]" % (len(res) - self.max_tool_chars)
                 except Exception as e:  # report the failure to the model instead of crashing
                     res = "error: %s" % e
                 if self.native_tools:

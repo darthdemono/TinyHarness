@@ -99,3 +99,56 @@ def test_streamed_run_runs_tool_and_streams_final_answer():
     got = []
     assert a.run("2+3?", on_token=got.append)== "the sum is five"
     assert "".join(got)== "the sum is five"
+
+
+def _history(a, n):
+    for i in range(n):
+        a.messages.append({"role": "user", "content": "q%d " % i + "x" * 100})
+        a.messages.append({"role": "assistant", "content": "a%d " % i + "y" * 100})
+
+
+def test_fit_drops_oldest_turns_but_keeps_system_and_newest():
+    a = Agent(Client(model="m"), system="SYS", max_chars=500)
+    _history(a, 10)
+    a.messages.append({"role": "user", "content": "newest"})
+    out = a.fit(a.messages)
+    assert out[0]["content"] == "SYS" and out[-1]["content"] == "newest"
+    assert out[1]["role"] == "user" and len(out) < len(a.messages)
+    assert sum(len(m["content"]) for m in out) <= 500 + len("newest")
+
+
+def test_fit_never_starts_mid_tool_call_and_is_off_by_default():
+    a = Agent(Client(model="m"), max_chars=300)
+    a.messages += [
+        {"role": "user", "content": "x" * 200},
+        {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": "t", "arguments": {}}}]},
+        {"role": "tool", "content": "r" * 200},
+        {"role": "assistant", "content": "done"},
+        {"role": "user", "content": "next"},
+    ]
+    out = a.fit(a.messages)
+    assert [m["content"] for m in out] == ["next"]
+    b = Agent(Client(model="m"))
+    b.messages += a.messages
+    assert b.fit(b.messages) == b.messages
+
+
+def test_long_tool_result_is_truncated():
+    n = []
+
+    def reply(body):
+        n.append(body)
+        if len(n) == 1:
+            return {"role": "assistant", "content": "", "tool_calls": [{"function": {"name": "big", "arguments": {}}}]}
+        return {"role": "assistant", "content": "ok"}
+
+    _, url = start(reply)
+    a = Agent(Client(model="m", base_url=url), max_tool_chars=10)
+
+    @a.tool
+    def big():
+        """Return a lot of text."""
+        return "z" * 50
+
+    a.run("go")
+    assert n[1]["messages"][-1]["content"] == "z" * 10 + "\n[truncated 40 characters]"
