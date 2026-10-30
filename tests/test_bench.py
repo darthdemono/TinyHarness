@@ -1,5 +1,5 @@
 from fake_server import start
-from hackbase import bench, cli
+from tinyharness import bench, cli
 
 
 def test_rows_and_table_records_failure_per_model():

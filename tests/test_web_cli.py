@@ -3,10 +3,10 @@ import threading
 import urllib.request
 
 from fake_server import start
-from hackbase import cli
-from hackbase.agent import Agent
-from hackbase.client import Client
-from hackbase.web import make_server
+from tinyharness import cli
+from tinyharness.agent import Agent
+from tinyharness.client import Client
+from tinyharness.web import make_server
 
 
 def test_web_chat_roundtrip():
@@ -14,7 +14,7 @@ def test_web_chat_roundtrip():
     web = make_server(lambda: Agent(Client(model="m", base_url=url)), port=0)
     threading.Thread(target=web.serve_forever, daemon=True).start()
     base = "http://127.0.0.1:%d" % web.server_port
-    assert b"hackbase" in urllib.request.urlopen(base + "/").read()
+    assert b"tinyharness" in urllib.request.urlopen(base + "/").read()
     req = urllib.request.Request(base + "/chat", data=json.dumps({"message": "ping"}).encode())
     lines = [json.loads(x) for x in urllib.request.urlopen(req).read().decode().splitlines()]
     assert "".join(x["t"] for x in lines) == "pong"

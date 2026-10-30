@@ -2,7 +2,7 @@ import importlib.util
 import os
 
 from fake_server import start
-from hackbase.client import Client
+from tinyharness.client import Client
 
 
 def load(name):

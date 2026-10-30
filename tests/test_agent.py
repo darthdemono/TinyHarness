@@ -1,6 +1,6 @@
 from fake_server import start
-from hackbase.agent import Agent
-from hackbase.client import Client
+from tinyharness.agent import Agent
+from tinyharness.client import Client
 
 
 def test_tool_loop_runs_tool_then_answers():

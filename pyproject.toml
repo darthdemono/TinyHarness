@@ -1,5 +1,5 @@
 [project]
-name = "hackbase"
+name = "tinyharness"
 version = "0.1.0"
 description = "Zero-dependency starter kit for open-weight AI hack day projects."
 requires-python = ">=3.11"
@@ -14,14 +14,14 @@ classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS In
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "build>=1"]
 
 [project.scripts]
-hackbase = "hackbase.cli:main"
+tinyharness = "tinyharness.cli:main"
 
 [build-system]
 requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["hackbase*"]
+include = ["tinyharness*"]
 
 [tool.ruff]
 target-version = "py311"

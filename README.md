@@ -1,50 +1,50 @@
-# hackbase
+# tinyharness
 
 Zero-dependency starter kit for open-weight AI hack day projects. Pure Python standard library, Python 3.11 or newer.
 
 ## Parts
 
-- `hackbase.client`: chat with Ollama or any OpenAI-compatible server, with image input.
-- `hackbase.skills`: load `SKILL.md` folders (name and description frontmatter).
-- `hackbase.agent`: tool-calling loop. Native tool calls by default, JSON text fallback for models without them.
-- `hackbase.tools`: sandboxed list, read and keyword search over a local folder.
-- `hackbase.structured`: ask for JSON matching a schema, validated with retries; CSV export. Image in, table out.
-- `hackbase.flows`: map-reduce `digest` of long text, `grounded` answers that cite `path:line` and refuse outside the sources.
-- `hackbase.presets`: role prompts (plain, describer, tutor, quiz, coach, firstaid, translator) in any language.
-- `hackbase.redteam`: prompt-injection sweep that reports which attacks leaked a canary secret.
-- `hackbase.bench`: same prompts through several models, markdown table out.
-- `hackbase.web`: one-page chat UI on `http.server`, with image upload and one conversation per tab.
-- `hackbase.cli`: the `hackbase` command.
+- `tinyharness.client`: chat with Ollama or any OpenAI-compatible server, with image input.
+- `tinyharness.skills`: load `SKILL.md` folders (name and description frontmatter).
+- `tinyharness.agent`: tool-calling loop. Native tool calls by default, JSON text fallback for models without them.
+- `tinyharness.tools`: sandboxed list, read and keyword search over a local folder.
+- `tinyharness.structured`: ask for JSON matching a schema, validated with retries; CSV export. Image in, table out.
+- `tinyharness.flows`: map-reduce `digest` of long text, `grounded` answers that cite `path:line` and refuse outside the sources.
+- `tinyharness.presets`: role prompts (plain, describer, tutor, quiz, coach, firstaid, translator) in any language.
+- `tinyharness.redteam`: prompt-injection sweep that reports which attacks leaked a canary secret.
+- `tinyharness.bench`: same prompts through several models, markdown table out.
+- `tinyharness.web`: one-page chat UI on `http.server`, with image upload and one conversation per tab.
+- `tinyharness.cli`: the `tinyharness` command.
 
 ## Quick start
 
 ```
 pip install -e '.[dev]'
 ollama pull gemma3
-hackbase run "Say hello in Hungarian"
-hackbase -m gemma3 run -i photo.jpg "What is on this sign?"
-hackbase --docs ./notes chat
-hackbase --text-tools --docs ./notes run "What does the permit rule say?"
-hackbase bench --models gemma3,llama3.2 "Explain DNS in two lines"
-hackbase extract --fields item:str,qty:int,price:float --many --csv -i receipt.jpg
-hackbase digest chat_export.txt
-hackbase ask ./textbook "Why is the sky blue?"
-hackbase --preset coach --lang Hungarian --session me.json chat
-hackbase redteam
-hackbase skills --validate
-hackbase serve --port 8080
+tinyharness run "Say hello in Hungarian"
+tinyharness -m gemma3 run -i photo.jpg "What is on this sign?"
+tinyharness --docs ./notes chat
+tinyharness --text-tools --docs ./notes run "What does the permit rule say?"
+tinyharness bench --models gemma3,llama3.2 "Explain DNS in two lines"
+tinyharness extract --fields item:str,qty:int,price:float --many --csv -i receipt.jpg
+tinyharness digest chat_export.txt
+tinyharness ask ./textbook "Why is the sky blue?"
+tinyharness --preset coach --lang Hungarian --session me.json chat
+tinyharness redteam
+tinyharness skills --validate
+tinyharness serve --port 8080
 ```
 
-Settings come from flags or the environment: `HACKBASE_BACKEND` (`ollama` or `openai`), `HACKBASE_MODEL`,
-`HACKBASE_URL`, `HACKBASE_API_KEY`. For a hosted OpenAI-compatible endpoint use `--backend openai --url <base>/v1`.
+Settings come from flags or the environment: `TINYHARNESS_BACKEND` (`ollama` or `openai`), `TINYHARNESS_MODEL`,
+`TINYHARNESS_URL`, `TINYHARNESS_API_KEY`. For a hosted OpenAI-compatible endpoint use `--backend openai --url <base>/v1`.
 
 ## Build your own
 
 Register any function as a tool; its docstring is the description and its annotations give the types:
 
 ```python
-from hackbase.agent import Agent
-from hackbase.client import Client
+from tinyharness.agent import Agent
+from tinyharness.client import Client
 
 agent = Agent(Client(), system="You are a helpful assistant.")
 

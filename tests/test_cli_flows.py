@@ -1,7 +1,7 @@
 import json
 
 from fake_server import start
-from hackbase import cli
+from tinyharness import cli
 
 
 def test_extract_csv_from_image(tmp_path, capsys):

@@ -1,6 +1,6 @@
 import pytest
 
-from hackbase.tools import folder_tools
+from tinyharness.tools import folder_tools
 
 
 def make(tmp_path):
@@ -28,7 +28,7 @@ def test_read_cannot_escape_folder(tmp_path):
 
 def test_cli_docs_flag_registers_tools(tmp_path, capsys):
     from fake_server import start
-    from hackbase import cli
+    from tinyharness import cli
 
     make(tmp_path)
     _, url = start(lambda b: {"role": "assistant", "content": str(len(b.get("tools", [])))})
@@ -37,7 +37,7 @@ def test_cli_docs_flag_registers_tools(tmp_path, capsys):
 
 
 def test_skips_vendor_dirs_and_search_returns_hits(tmp_path):
-    from hackbase.tools import search
+    from tinyharness.tools import search
 
     (tmp_path / ".git").mkdir()
     (tmp_path / ".git" / "x.txt").write_text("permit")

@@ -1,7 +1,7 @@
 from fake_server import start
-from hackbase import cli, redteam
-from hackbase.agent import Agent
-from hackbase.client import Client
+from tinyharness import cli, redteam
+from tinyharness.agent import Agent
+from tinyharness.client import Client
 
 
 def test_leak_detection_forms():

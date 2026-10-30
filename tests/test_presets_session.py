@@ -3,9 +3,9 @@ import json
 import pytest
 
 from fake_server import start
-from hackbase import cli, presets
-from hackbase.agent import Agent
-from hackbase.client import Client
+from tinyharness import cli, presets
+from tinyharness.agent import Agent
+from tinyharness.client import Client
 
 
 def test_preset_fills_language_and_rejects_unknown():

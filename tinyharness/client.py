@@ -17,11 +17,11 @@ class Client:
     """backend 'ollama' (default, localhost:11434) or 'openai' (any /v1/chat/completions server)."""
 
     def __init__(self, model=None, backend=None, base_url=None, api_key=None, timeout=300):
-        self.backend = backend or os.environ.get("HACKBASE_BACKEND", OLLAMA)
-        self.model = model or os.environ.get("HACKBASE_MODEL", "gemma3")
+        self.backend = backend or os.environ.get("TINYHARNESS_BACKEND", OLLAMA)
+        self.model = model or os.environ.get("TINYHARNESS_MODEL", "gemma3")
         default = "http://localhost:11434" if self.backend == OLLAMA else "http://localhost:8000/v1"
-        self.base_url = (base_url or os.environ.get("HACKBASE_URL", default)).rstrip("/")
-        self.api_key = api_key or os.environ.get("HACKBASE_API_KEY", "")
+        self.base_url = (base_url or os.environ.get("TINYHARNESS_URL", default)).rstrip("/")
+        self.api_key = api_key or os.environ.get("TINYHARNESS_API_KEY", "")
         self.timeout = timeout
 
     def _post(self, path, body):

@@ -1,8 +1,8 @@
 import pytest
 
 from fake_server import start
-from hackbase.client import Client
-from hackbase.structured import ask_json, find_json, to_csv
+from tinyharness.client import Client
+from tinyharness.structured import ask_json, find_json, to_csv
 
 S = {"item": "str", "price": "float"}
 

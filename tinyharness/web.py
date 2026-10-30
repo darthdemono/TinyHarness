@@ -3,11 +3,11 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>hackbase</title>
+<title>tinyharness</title>
 <style>body{font:16px system-ui;max-width:42rem;margin:0 auto;padding:1rem;background:#0e0e0e;color:#eee}
 #log div{margin:.5rem 0;padding:.6rem .8rem;border-radius:.5rem;white-space:pre-wrap}.u{background:#222}.a{background:#1b2a14}
 form{display:flex;gap:.5rem;flex-wrap:wrap}input[type=text]{flex:1;min-width:10rem}button,input{font:inherit;padding:.5rem}</style>
-<h1>hackbase</h1><div id=log></div>
+<h1>tinyharness</h1><div id=log></div>
 <form id=f><input id=m type=text placeholder="Ask something" autofocus><input id=i type=file accept="image/*"><button>Send</button></form>
 <script>
 const log=document.getElementById('log'),sid=Math.random().toString(36).slice(2);

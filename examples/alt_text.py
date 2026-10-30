@@ -4,7 +4,7 @@
 """
 import sys
 
-from hackbase.client import Client, image_b64
+from tinyharness.client import Client, image_b64
 
 SYSTEM = "You write alt text. One sentence for the gist, then one short paragraph of detail. No guessing names."
 

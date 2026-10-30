@@ -1,6 +1,6 @@
 from fake_server import start
-from hackbase.client import Client
-from hackbase.flows import REFUSAL, chunks, digest, grounded
+from tinyharness.client import Client
+from tinyharness.flows import REFUSAL, chunks, digest, grounded
 
 
 def test_chunks_respect_size_and_cut_long_lines():

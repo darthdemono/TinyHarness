@@ -4,9 +4,9 @@
 """
 import sys
 
-from hackbase.agent import Agent
-from hackbase.client import Client
-from hackbase.tools import folder_tools
+from tinyharness.agent import Agent
+from tinyharness.client import Client
+from tinyharness.tools import folder_tools
 
 SYSTEM = (
     "You explain official letters in plain language. Search the rules folder before answering, "

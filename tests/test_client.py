@@ -1,5 +1,5 @@
 from fake_server import start
-from hackbase.client import Client
+from tinyharness.client import Client
 
 
 def test_ollama_ask_with_image():

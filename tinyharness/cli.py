@@ -1,4 +1,4 @@
-"""hackbase chat | run | skills | serve | bench | extract | digest | ask | redteam"""
+"""tinyharness chat | run | skills | serve | bench | extract | digest | ask | redteam"""
 import argparse
 import json
 import os
@@ -22,13 +22,13 @@ def say(agent, prompt, images=None):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="hackbase")
+    p = argparse.ArgumentParser(prog="tinyharness")
     p.add_argument("-m", "--model")
     p.add_argument("--backend", choices=["ollama", "openai"])
     p.add_argument("--url")
     p.add_argument("--skills", default="skills", help="folder of skill directories")
     p.add_argument("-s", "--system", default="")
-    p.add_argument("--preset", choices=sorted(PRESETS), help="role prompt, see hackbase.presets")
+    p.add_argument("--preset", choices=sorted(PRESETS), help="role prompt, see tinyharness.presets")
     p.add_argument("--lang", default="English", help="language the preset answers in")
     p.add_argument("--session", help="JSON file: conversation is loaded from it and saved back after each turn")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
