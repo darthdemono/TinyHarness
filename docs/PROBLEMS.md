@@ -20,6 +20,8 @@ Prize tracks: Best Use of Gemma 4 (multimodal, focused tools, rapid prototyping)
 | 12 | Community notice board summariser: long group-chat exports to a short weekly digest per language. | Rapid Prototyping | `tinyharness digest chat_export.txt --instruction "Weekly digest, one bullet per topic"` |
 | 13 | Prompt-injection tester: a skill that attacks your own agent with known tricks and reports which ones worked. | Open-Source AI, agent skill | `tinyharness redteam` (exit code 1 if any attack leaked) |
 | 14 | Kids' science tutor that answers from a fixed local textbook and refuses to guess outside it. | Focused AI Tools | `tinyharness ask ./textbook "Why is the sky blue?"` (refuses outside the book) |
+| 15 | Hardware assistant: a sensor or camera on a board feeds readings to a local model that explains what is happening in plain words. Runs on a small ARM board; whether a given board can run the model is unchecked. | Hardware Wizard | `tinyharness doctor` then `--local` with the smallest model; use `extract` to turn readings into JSON |
+| 16 | Deployable tool: package any of the above as a container with the engine inside, so a community can run it with one command. | Open-Source Contributor Raffle | write a small Dockerfile around `pip install .` and `tinyharness --local serve`; the CLI runs headless |
 
 These are ideas generated from the published themes, not organiser requirements. Pick one in the first
 fifteen minutes; every statement above runs with the commands shown, and no extra code is needed to get a first demo.
