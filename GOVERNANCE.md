@@ -7,7 +7,7 @@ responsible for, and how that access is granted.
 
 | Who | Role | Sensitive resources |
 |---|---|---|
-| Jubair Hasan ([@darthdemono](https://github.com/darthdemono)) | Maintainer | Repository admin, GitHub Actions secrets (the coverage upload token), repository settings, private vulnerability reports |
+| Jubair Hasan ([\@darthdemono](https://github.com/darthdemono)) | Maintainer | Repository admin, GitHub Actions secrets (the coverage upload token), repository settings, private vulnerability reports |
 
 There are no other collaborators with write access. The project publishes no signing keys.
 

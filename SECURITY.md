@@ -11,7 +11,7 @@ API keys.
 
 ### Security contacts
 
-The maintainer, Jubair Hasan ([@darthdemono](https://github.com/darthdemono)), is the only security contact. The private form above
+The maintainer, Jubair Hasan ([\@darthdemono](https://github.com/darthdemono)), is the only security contact. The private form above
 reaches the maintainer directly.
 
 ### What to expect
