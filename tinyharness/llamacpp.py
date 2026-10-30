@@ -115,6 +115,12 @@ def find_server(variant="cpu"):
     return installed(variant) or (shutil.which("llama-server") if variant == "cpu" else None)
 
 
+def make_executable(path):
+    """Mark the unpacked binary runnable. Windows has no execute bit, so it is left alone there."""
+    if os.name != "nt":
+        os.chmod(path, 0o755)
+
+
 def install(variant="cpu", log=print):
     """Download the newest matching llama.cpp release, verify its sha256, unpack it, return the binary path."""
     pattern = asset_pattern(*platform_key(), variant=variant)
@@ -137,8 +143,7 @@ def install(variant="cpu", log=print):
     got = find_binary(dest)
     if not got:
         raise RuntimeError("llama-server not found in " + asset["name"])
-    if os.name != "nt":
-        os.chmod(got, 0o755)
+    make_executable(got)
     return got
 
 
