@@ -26,3 +26,9 @@ CLAUDE*.md
 AGENTS*.md
 CODEX*.md
 GEMINI*.md
+
+# Generated
+documentation/
+.coverage
+coverage.xml
+htmlcov/

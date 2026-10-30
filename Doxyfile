@@ -1,0 +1,44 @@
+# Doxygen configuration. Build: doxygen Doxyfile  (output: documentation/index.html)
+# Only settings that differ from the defaults are listed.
+PROJECT_NAME           = "TinyHarness"
+PROJECT_BRIEF          = "Small, fast toolkit for building open-weight AI projects in a day"
+OUTPUT_DIRECTORY       = documentation
+HTML_OUTPUT            = .
+INPUT                  = README.md tinyharness examples docs
+FILE_PATTERNS          = *.py *.md
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */tinyharness/skills/*
+USE_MDFILE_AS_MAINPAGE = README.md
+# Python: NO makes Doxygen read docstrings as Doxygen comments (so @brief and @param work); YES would print them verbatim.
+OPTIMIZE_OUTPUT_JAVA   = YES
+PYTHON_DOCSTRING       = NO
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+MARKDOWN_SUPPORT       = YES
+AUTOLINK_SUPPORT       = YES
+# Show everything, including private helpers: the audience is people learning the code.
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+SORT_MEMBER_DOCS       = NO
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+SEARCHENGINE           = YES
+GENERATE_TREEVIEW      = YES
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+INTERACTIVE_SVG        = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+COLLABORATION_GRAPH    = YES
+INCLUDE_GRAPH          = YES
+DOT_GRAPH_MAX_NODES    = 60
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = NO
+QUIET                  = YES
