@@ -9,7 +9,6 @@ import platform
 import re
 import shutil
 import subprocess
-import sys
 import tarfile
 import tempfile
 import time
@@ -96,24 +95,24 @@ def find_binary(root):
     return None
 
 
-def installed():
-    """Newest llama-server previously installed under the tinyharness home, or None."""
+def installed(variant="cpu"):
+    """Newest llama-server of this variant previously installed under the tinyharness home, or None."""
     base = os.path.join(home(), "llama.cpp")
     if not os.path.isdir(base):
         return None
-    for tag in sorted(os.listdir(base), reverse=True):
+    for tag in sorted((d for d in os.listdir(base) if d.endswith("-" + variant)), reverse=True):
         p = find_binary(os.path.join(base, tag))
         if p:
             return p
     return None
 
 
-def find_server():
-    """Resolve llama-server: TINYHARNESS_LLAMA_SERVER, then PATH, then a previous install."""
+def find_server(variant="cpu"):
+    """Resolve llama-server: TINYHARNESS_LLAMA_SERVER, then a previous install, then PATH (cpu only)."""
     env = os.environ.get("TINYHARNESS_LLAMA_SERVER")
     if env:
         return env
-    return shutil.which("llama-server") or installed()
+    return installed(variant) or (shutil.which("llama-server") if variant == "cpu" else None)
 
 
 def install(variant="cpu", log=print):
@@ -127,7 +126,7 @@ def install(variant="cpu", log=print):
         return got
     log("downloading %s (%d MB)" % (asset["name"], asset["size"] // 1048576))
     os.makedirs(dest, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=home()) as tmp:  # not /tmp, which is often a small RAM disk
         arc = os.path.join(tmp, asset["name"])
         with _get(asset["browser_download_url"]) as r, open(arc, "wb") as f:
             shutil.copyfileobj(r, f)
@@ -141,3 +140,88 @@ def install(variant="cpu", log=print):
     if os.name != "nt":
         os.chmod(got, 0o755)
     return got
+
+
+def free_port():
+    import socket
+
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+def command(binary, model, port, ctx=4096, threads=None, kv="q8_0", gpu_layers=None):
+    """llama-server argv tuned for small machines: one slot, quantised KV cache, no built-in web UI.
+
+    model is a path to a .gguf file, or a Hugging Face spec 'user/repo[:quant]' that llama-server downloads itself.
+    """
+    cmd = [binary, "--host", "127.0.0.1", "--port", str(port), "-c", str(ctx), "-np", "1", "--no-webui"]
+    cmd += ["-m", model] if os.path.isfile(model) else ["-hf", model]
+    if threads:
+        cmd += ["-t", str(threads)]
+    if gpu_layers is not None:
+        cmd += ["-ngl", str(gpu_layers)]
+    if kv:
+        cmd += ["-ctk", kv, "-ctv", kv]
+    return cmd
+
+
+class Server:
+    """Run llama-server as a child process for the length of a with block."""
+
+    def __init__(self, model, binary=None, ctx=4096, threads=None, kv="q8_0", timeout=1800, log=print, gpu=False):
+        variant = "vulkan" if gpu else "cpu"
+        self.binary = binary or find_server(variant) or install(variant, log=log)
+        self.port = free_port()
+        self.cmd = command(self.binary, model, self.port, ctx, threads, kv, gpu_layers=99 if gpu else None)
+        self.timeout = timeout
+        self.log = log
+        self.proc = None
+        self.logfile = os.path.join(home(), "logs", "llama-server.log")
+
+    @property
+    def url(self):
+        return "http://127.0.0.1:%d/v1" % self.port
+
+    def _tail(self, n=15):
+        try:
+            with open(self.logfile, encoding="utf-8", errors="replace") as f:
+                return "".join(f.readlines()[-n:])
+        except OSError:
+            return ""
+
+    def start(self):
+        os.makedirs(os.path.dirname(self.logfile), exist_ok=True)
+        out = open(self.logfile, "w", encoding="utf-8")
+        self.proc = subprocess.Popen(self.cmd, stdout=out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL)
+        out.close()
+        self.log("starting llama-server (first run may download the model; log: %s)" % self.logfile)
+        deadline = time.monotonic() + self.timeout
+        health = "http://127.0.0.1:%d/health" % self.port
+        while time.monotonic() < deadline:
+            if self.proc.poll() is not None:
+                raise RuntimeError("llama-server exited with code %s:\n%s" % (self.proc.returncode, self._tail()))
+            try:
+                with urllib.request.urlopen(health, timeout=2) as r:
+                    if r.status == 200:
+                        return self
+            except OSError:  # 503 while loading, connection refused while binding
+                pass
+            time.sleep(0.5)
+        self.stop()
+        raise RuntimeError("llama-server not ready after %ds:\n%s" % (self.timeout, self._tail()))
+
+    def stop(self):
+        if self.proc and self.proc.poll() is None:
+            self.proc.terminate()
+            try:
+                self.proc.wait(10)
+            except subprocess.TimeoutExpired:
+                self.proc.kill()
+                self.proc.wait()
+
+    def __enter__(self):
+        return self.start()
+
+    def __exit__(self, *exc):
+        self.stop()

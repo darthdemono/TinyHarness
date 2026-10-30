@@ -1,10 +1,10 @@
-"""tinyharness chat | run | skills | serve | bench | extract | digest | ask | redteam"""
+"""tinyharness chat | run | skills | serve | bench | extract | digest | ask | redteam | doctor | setup"""
 import argparse
 import json
 import os
 import sys
 
-from . import bench, flows, redteam
+from . import bench, flows, hw, llamacpp, redteam
 from . import skills as skills_mod
 from .agent import Agent
 from .client import Client, image_b64
@@ -33,6 +33,11 @@ def main(argv=None):
     p.add_argument("--session", help="JSON file: conversation is loaded from it and saved back after each turn")
     p.add_argument("--text-tools", action="store_true", help="tool calls as JSON text, for models without native tools")
     p.add_argument("--docs", help="folder the agent may list, read and search")
+    p.add_argument("--local", nargs="?", const="auto", metavar="MODEL",
+                   help="run llama.cpp for this command: a .gguf path, a Hugging Face spec user/repo[:quant], or auto (fits this machine)")
+    p.add_argument("--gpu", action="store_true", help="with --local: use the Vulkan build and offload every layer to the GPU")
+    p.add_argument("--ctx", type=int, default=4096, help="context size for --local")
+    p.add_argument("--threads", type=int, help="CPU threads for --local (default: llama.cpp decides)")
     sub = p.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
     r.add_argument("prompt")
@@ -53,13 +58,35 @@ def main(argv=None):
     q.add_argument("folder")
     q.add_argument("question")
     sub.add_parser("redteam", help="prompt-injection sweep against the configured agent")
+    sub.add_parser("doctor", help="show this machine and the model that fits it")
+    st = sub.add_parser("setup", help="download llama.cpp (llama-server) for this machine")
+    st.add_argument("--variant", choices=["cpu", "vulkan"], default="cpu")
     sub.add_parser("chat")
     k = sub.add_parser("skills")
     k.add_argument("--validate", action="store_true", help="check folders against the Agent Skills spec")
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8080)
     a = p.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):  # Windows consoles default to a legacy codepage
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+    if a.cmd == "doctor":
+        info = hw.report()
+        info["llama_server"] = llamacpp.find_server("cpu") or "not installed (run: tinyharness setup)"
+        print(json.dumps(info, indent=2))
+        return 0
+    if a.cmd == "setup":
+        print(llamacpp.install(a.variant))
+        return 0
+    if a.local:
+        spec = hw.recommend(hw.ram_gb())[0] if a.local == "auto" else a.local
+        with llamacpp.Server(spec, ctx=a.ctx, threads=a.threads, gpu=a.gpu) as srv:
+            a.backend, a.url = "openai", srv.url
+            return run(a)
+    return run(a)
+
+
+def run(a):
     if a.cmd == "bench":
         rows = bench.run(a.models.split(","), a.prompts, backend=a.backend, base_url=a.url)
         print(bench.table(rows))
