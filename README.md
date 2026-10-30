@@ -127,8 +127,7 @@ def add(a: int, b: int):
 print(agent.run("What is 2+3?"))
 ```
 
-Two worked examples are in `examples/`. `docs/PROBLEMS.md` maps sixteen ideas to the command that starts each,
-and `docs/PITCH.md` is a two-minute demo outline.
+Two worked examples are in `examples/`.
 
 ## Skills
 

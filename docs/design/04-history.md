@@ -67,6 +67,8 @@ one, committed in small groups with one plain sentence per commit.
 | 8137dcb | 2026-10-30 | Record the rate limit and cross-platform test traps in the design notes |
 | e36f5ec | 2026-10-30 | Give the slow-start health test a generous timeout so loaded runners do not fail it |
 | 6d8392d | 2026-10-30 | Record the organisers handbook rules, the Gemma API wording and the pre-built toolkit risk in the notes |
+| 76768ce | 2026-10-30 | Add a new command that writes a fresh project depending on TinyHarness |
+| b476a39 | 2026-10-30 | Present TinyHarness as a dependency, fix the repository name and update the design notes |
 
 Regenerate this table with:
 
