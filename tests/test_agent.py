@@ -76,3 +76,26 @@ def test_text_fallback_plain_answer_is_returned():
     a = Agent(Client(model="m", base_url=url), native_tools=False)
     a.tool(lambda: 1)
     assert a.run("hi") == "just text"
+
+
+def test_streamed_run_runs_tool_and_streams_final_answer():
+    n = []
+
+    def reply(body):
+        n.append(1)
+        if len(n) == 1:
+            return {"role": "assistant", "content": "", "tool_calls": [
+                {"function": {"name": "add", "arguments": {"a": 2, "b": 3}}}]}
+        return {"role": "assistant", "content": "the sum is five"}
+
+    _, url = start(reply)
+    a = Agent(Client(model="m", base_url=url))
+
+    @a.tool
+    def add(a: int, b: int):
+        """Add two numbers."""
+        return a + b
+
+    got = []
+    assert a.run("2+3?", on_token=got.append).strip() == "the sum is five"
+    assert "".join(got).strip() == "the sum is five"

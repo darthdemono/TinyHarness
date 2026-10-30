@@ -87,15 +87,16 @@ class Agent:
             return [{"function": {"name": obj["tool"], "arguments": obj.get("args") or {}}}]
         return None
 
-    def run(self, prompt, images=None):
+    def run(self, prompt, images=None, on_token=None):
         self.messages.append({"role": "user", "content": prompt, **({"images": images} if images else {})})
         for _ in range(self.max_steps):
             if self.native_tools:
-                msg = self.client.chat(self.messages, tools=self._schema() or None)
+                msg = self.client.chat(self.messages, tools=self._schema() or None, on_token=on_token)
                 calls = msg.get("tool_calls")
             else:
                 extra = [{"role": "system", "content": self._text_prompt()}] if self.tools else []
-                msg = self.client.chat(extra + self.messages)
+                # text-mode tool calls are raw JSON, so only stream when no tools are registered
+                msg = self.client.chat(extra + self.messages, on_token=None if self.tools else on_token)
                 calls = self._parse_text_call(msg.get("content", "")) if self.tools else None
             self.messages.append(msg)
             if not calls:
