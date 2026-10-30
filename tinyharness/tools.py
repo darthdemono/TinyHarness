@@ -1,4 +1,11 @@
-"""Ready-made tools over a local folder: list, read and keyword search. Sandboxed to the root."""
+"""@file tools.py
+@brief Ready-made tools that give a model read access to one folder, and nothing else.
+
+Used for retrieval (the `--docs` flag, the `ask` command and the grounded flow).
+Every path is resolved and checked against the root, so `../` and symlinks
+cannot reach outside it. Search is plain keyword counting on purpose: no index,
+no embeddings, no dependencies, instant on a hack-day sized folder.
+"""
 import os
 import re
 
@@ -8,7 +15,17 @@ MAX_READ = 20000
 
 
 def search(root, query, limit=5):
-    """Keyword search under root. Return up to limit (score, path, line_no, line) hits, best first."""
+    """@brief Keyword search under a folder.
+
+    Words shorter than three letters are ignored. A file scores the number of times
+    query words occur in it; its best line (most distinct query words) is returned
+    with its line number so answers can cite `path:line`.
+
+    @param root Folder to search.
+    @param query Free text.
+    @param limit Maximum hits.
+    @return List of `(score, relative_path, line_number, line_text)`, best first, ties by path.
+    """
     root = os.path.realpath(root)
     words = [w for w in re.findall(r"\w+", query.lower()) if len(w) > 2]
     hits = []
@@ -24,6 +41,12 @@ def search(root, query, limit=5):
 
 
 def _walk(root):
+    """@brief Yield relative paths (always with `/`) of text files below root, skipping vendor folders.
+
+    Only extensions in TEXT are listed; folders named in SKIP (.git, node_modules, .venv, ...) are not entered.
+
+    @param root Folder to walk.
+    """
     for d, dirs, names in os.walk(root):
         dirs[:] = sorted(x for x in dirs if x not in SKIP)
         for n in sorted(names):
@@ -32,26 +55,47 @@ def _walk(root):
 
 
 def folder_tools(root):
-    """Return [list_files, read_file, search_docs] bound to root; paths cannot escape it."""
+    """@brief Create the three folder tools bound to one root.
+
+    @param root Folder the tools may touch.
+    @return `[list_files, read_file, search_docs]`, ready for Agent.add_tools.
+    """
     root = os.path.realpath(root)
 
     def inside(rel):
+        """@brief Resolve a relative path and refuse anything outside the root.
+
+        @param rel Relative path from the model.
+        @return Absolute path inside the root.
+        @throws ValueError If the resolved path escapes the root.
+        """
         p = os.path.realpath(os.path.join(root, rel))
         if p != root and not p.startswith(root + os.sep):
             raise ValueError("path outside the folder: " + rel)
         return p
 
     def list_files():
-        """List the readable text files in the folder."""
+        """List the readable text files in the folder.
+
+        @return One relative path per line, or `no files`.
+        """
         return "\n".join(sorted(_walk(root))) or "no files"
 
     def read_file(path: str):
-        """Read a text file from the folder by relative path (first 20000 characters)."""
+        """Read a text file from the folder by relative path (first 20000 characters).
+
+        @param path Relative path as listed by list_files.
+        @return File text, truncated to keep small context windows usable.
+        """
         with open(inside(path), encoding="utf-8", errors="replace") as f:
             return f.read(MAX_READ)
 
     def search_docs(query: str):
-        """Keyword search over the folder. Returns the best 5 hits as path:line: text."""
+        """Keyword search over the folder. Returns the best 5 hits as path:line: text.
+
+        @param query Words to look for.
+        @return Lines of `path:line: text`, or `no matches`.
+        """
         hits = search(root, query)
         return "\n".join("%s:%d: %s" % (r, n, t) for _, r, n, t in hits) or "no matches"
 
