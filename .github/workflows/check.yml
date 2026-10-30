@@ -51,3 +51,16 @@ jobs:
       - env:
           GITHUB_TOKEN: ${{ github.token }} # the anonymous API limit is shared by runners
         run: python -c "import subprocess, sys; from tinyharness import llamacpp; p = llamacpp.install(); print(p); sys.exit(subprocess.call([p, '--version']))"
+  ci-result:
+    # The one check the branch ruleset requires; it fails if any job above failed or was cancelled.
+    name: CI result
+    if: always()
+    needs: [test, engine]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          TEST: ${{ needs.test.result }}
+          ENGINE: ${{ needs.engine.result }}
+        run: |
+          echo "test=$TEST engine=$ENGINE"
+          [ "$TEST" = success ] && [ "$ENGINE" = success ]
