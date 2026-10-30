@@ -6,7 +6,7 @@
   "unknown" until the first upload.
 - **OpenSSF Best Practices badge**: register the project at bestpractices.dev, then add its badge (needs the numeric project id).
 - **GitHub Pages**: set Pages to "GitHub Actions" in repository settings so the API reference deploys (the workflow exists).
-- **Release badge**: needs a first tagged release.
+- **Release badge**: appears after the first tagged release (0.1.0 is prepared).
 - **Dependabot security updates**: a repository setting.
 
 ## Technical follow-ups, none started
