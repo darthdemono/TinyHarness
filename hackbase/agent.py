@@ -6,8 +6,9 @@ _TYPES = {int: "integer", float: "number", bool: "boolean"}
 
 
 class Agent:
-    def __init__(self, client, system="", skills=None, max_steps=8):
+    def __init__(self, client, system="", skills=None, max_steps=8, native_tools=True):
         self.client = client
+        self.native_tools = native_tools
         self.max_steps = max_steps
         self.tools = {}
         self.skills = skills or {}
@@ -43,12 +44,44 @@ class Agent:
             })
         return out
 
+    def _text_prompt(self):
+        """Instructions for models with no native tool calling: reply with one JSON line."""
+        lines = [
+            "You can call tools. To call one, reply with ONLY one JSON object on one line:",
+            '{"tool": "<name>", "args": {...}}',
+            "After the tool result arrives, continue. When done, answer in plain text with no JSON.",
+            "Tools:",
+        ]
+        for f in self._schema():
+            f = f["function"]
+            lines.append("- %s(%s): %s" % (f["name"], ", ".join(f["parameters"]["properties"]), f["description"]))
+        return "\n".join(lines)
+
+    @staticmethod
+    def _parse_text_call(content):
+        """Return a native-shaped call list if content is a {'tool','args'} JSON object, else None."""
+        text = content.strip()
+        if text.startswith("```"):
+            text = text.strip("`").removeprefix("json").strip()
+        try:
+            obj = json.loads(text)
+        except ValueError:
+            return None
+        if isinstance(obj, dict) and isinstance(obj.get("tool"), str):
+            return [{"function": {"name": obj["tool"], "arguments": obj.get("args") or {}}}]
+        return None
+
     def run(self, prompt, images=None):
         self.messages.append({"role": "user", "content": prompt, **({"images": images} if images else {})})
         for _ in range(self.max_steps):
-            msg = self.client.chat(self.messages, tools=self._schema() or None)
+            if self.native_tools:
+                msg = self.client.chat(self.messages, tools=self._schema() or None)
+                calls = msg.get("tool_calls")
+            else:
+                extra = [{"role": "system", "content": self._text_prompt()}] if self.tools else []
+                msg = self.client.chat(extra + self.messages)
+                calls = self._parse_text_call(msg.get("content", "")) if self.tools else None
             self.messages.append(msg)
-            calls = msg.get("tool_calls")
             if not calls:
                 return msg.get("content", "")
             for c in calls:
@@ -60,5 +93,8 @@ class Agent:
                     res = str(self.tools[f["name"]](**args))
                 except Exception as e:  # report the failure to the model instead of crashing
                     res = "error: %s" % e
-                self.messages.append({"role": "tool", "content": res, "tool_call_id": c.get("id", ""), "name": f["name"]})
+                if self.native_tools:
+                    self.messages.append({"role": "tool", "content": res, "tool_call_id": c.get("id", ""), "name": f["name"]})
+                else:
+                    self.messages.append({"role": "user", "content": "Tool result for %s: %s" % (f["name"], res)})
         return "stopped after %d steps" % self.max_steps

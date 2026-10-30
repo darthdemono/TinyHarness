@@ -47,3 +47,32 @@ def test_tool_error_goes_to_model_and_skill_tool(tmp_path):
     assert a.run("go") == "done"
     assert n[1]["messages"][-1]["content"] == "error: x"
     assert a.use_skill("s") == "B" and "unknown" in a.use_skill("q")
+
+
+def test_text_tool_fallback_sends_no_tools_field_and_parses_json():
+    seen = []
+
+    def reply(body):
+        seen.append(body)
+        if len(seen) == 1:
+            return {"role": "assistant", "content": '```json\n{"tool": "add", "args": {"a": 1, "b": 2}}\n```'}
+        return {"role": "assistant", "content": "3"}
+
+    _, url = start(reply)
+    a = Agent(Client(model="m", base_url=url), native_tools=False)
+
+    @a.tool
+    def add(a: int, b: int):
+        """Add two numbers."""
+        return a + b
+
+    assert a.run("1+2?") == "3"
+    assert "tools" not in seen[0] and "add(a, b)" in seen[0]["messages"][0]["content"]
+    assert seen[1]["messages"][-1]["content"] == "Tool result for add: 3"
+
+
+def test_text_fallback_plain_answer_is_returned():
+    _, url = start(lambda b: {"role": "assistant", "content": "just text"})
+    a = Agent(Client(model="m", base_url=url), native_tools=False)
+    a.tool(lambda: 1)
+    assert a.run("hi") == "just text"
